@@ -119,9 +119,26 @@ function assertState(state: AuctionState, allowed: AuctionState[], what: string)
 }
 
 // ---- auction lifecycle ----------------------------------------------------
+async function shuffleWaitingQueue(tx: Prisma.TransactionClient | typeof prisma = prisma) {
+  const pool = await tx.player.findMany({ where: { status: { in: ["APPROVED", "WAITING"] } }, select: { id: true } });
+  // Fisher–Yates
+  for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+  for (const [i, p] of pool.entries()) await tx.player.update({ where: { id: p.id }, data: { queueOrder: i + 1 } });
+  return pool.length;
+}
+
+/** Randomise the order of the remaining queue. */
+export const shuffleQueue = () => withLock(async () => {
+  const n = await shuffleWaitingQueue();
+  await log("QUEUE_SHUFFLED", { payload: { count: n } });
+  await broadcast("state:sync");
+  return n;
+});
+
 export const startAuction = () => withLock(async () => {
   const a = await getAuction();
   assertState(a.state, ["WAITING"], "start auction");
+  await shuffleWaitingQueue(); // players come up in random order
   await prisma.$transaction([
     prisma.auction.update({ where: { id: 1 }, data: { state: "LIVE", startedAt: new Date(), version: { increment: 1 } } }),
     prisma.player.updateMany({ where: { status: "APPROVED" }, data: { status: "WAITING" } }),

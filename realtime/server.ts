@@ -38,6 +38,7 @@ const server = createServer(async (req, res) => {
         case "SKIP": await engine.skipPlayer(); break;
         case "NEXT": await engine.nextPlayer(); break;
         case "UNDO": await engine.undoLast(); break;
+        case "SHUFFLE": result = await engine.shuffleQueue(); break;
         case "REQUEUE": if (!playerId) throw new engine.AuctionError("playerId required"); await engine.requeuePlayer(playerId); break;
         case "BROADCAST": await engine.emitSnapshot("state:sync"); break;
         default: throw new engine.AuctionError("Unknown action");

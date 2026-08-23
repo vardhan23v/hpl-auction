@@ -4,7 +4,7 @@ import { guard, parse, handle, json, audit } from "@/lib/api";
 import { realtimeUrl, forwardControl } from "@/server/realtime-client";
 
 const schema = z.object({
-  action: z.enum(["START_AUCTION","PAUSE","RESUME","COMPLETE","RESET_AUCTION","START_PLAYER","START_TIMER","PAUSE_TIMER","RESET_TIMER","SELL","UNSOLD","SKIP","NEXT","UNDO","REQUEUE"]),
+  action: z.enum(["START_AUCTION","PAUSE","RESUME","COMPLETE","RESET_AUCTION","START_PLAYER","START_TIMER","PAUSE_TIMER","RESET_TIMER","SELL","UNSOLD","SKIP","NEXT","UNDO","REQUEUE","SHUFFLE"]),
   playerId: z.string().optional(),
 });
 
@@ -36,6 +36,7 @@ export async function POST(req: Request) {
       case "SKIP": await engine.skipPlayer(); break;
       case "NEXT": await engine.nextPlayer(); break;
       case "UNDO": await engine.undoLast(); break;
+      case "SHUFFLE": result = await engine.shuffleQueue(); break;
       case "REQUEUE": if (!playerId) throw new engine.AuctionError("playerId required"); await engine.requeuePlayer(playerId); break;
     }
     await audit(g.session.user.id, `AUCTION_${action}`, "Auction", playerId);

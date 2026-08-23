@@ -34,7 +34,7 @@ export function QueueBoard() {
   const filtering = q || role || maxBase;
   return (
     <div>
-      <div className="flex flex-wrap items-center gap-2"><h1 className="display mr-auto text-4xl">Auction Queue</h1><div className="display text-xl text-gold">Players Remaining: {list.length} / {total}</div></div>
+      <div className="flex flex-wrap items-center gap-2"><h1 className="display mr-auto text-4xl">Auction Queue</h1><button className="btn-ghost" onClick={async () => { const r = await fetch("/api/auction/control", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "SHUFFLE" }) }); push({ title: r.ok ? "Queue shuffled" : "Shuffle failed", tone: r.ok ? "success" : "error" }); load(); }}>🔀 Shuffle</button><div className="display text-xl text-gold">Players Remaining: {list.length} / {total}</div></div>
       <div className="mt-3 flex flex-wrap gap-2"><input className="input w-48" placeholder="Search…" value={q} onChange={(e) => setQ(e.target.value)} /><select className="input w-40" value={role} onChange={(e) => setRole(e.target.value)}><option value="">All roles</option>{Object.entries(ROLE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select><input className="input w-40" placeholder="Max base price" inputMode="numeric" value={maxBase} onChange={(e) => setMaxBase(e.target.value.replace(/\D/g, ""))} /></div>
       {filtering && <div className="mt-2 text-xs text-muted">Drag-to-reorder is disabled while filtering.</div>}
       <div className="mt-4 flex flex-col gap-1.5">

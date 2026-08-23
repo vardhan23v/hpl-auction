@@ -40,6 +40,7 @@ export function AuctioneerPanel({ a, isAdmin }: { a: A; isAdmin: boolean }) {
           </select>
           <button className="btn-gold whitespace-nowrap" disabled={!["LIVE", "SOLD", "UNSOLD"].includes(st) || !!busy} onClick={() => act("START_PLAYER", undefined, pick || undefined)}>START PLAYER</button>
         </div>
+        <B act="SHUFFLE" label="🔀 SHUFFLE QUEUE" enabled={["WAITING", "LIVE", "SOLD", "UNSOLD", "PAUSED"].includes(st)} />
         <B act="START_TIMER" label="START TIMER" enabled={st === "PLAYER_LIVE" && !s.timerRunning} />
         <B act="RESET_TIMER" label="RESET TIMER" enabled={st === "PLAYER_LIVE" || st === "PAUSED"} />
         {st === "PAUSED" ? <B act="RESUME" label="RESUME" cls="btn-green" enabled /> : <B act="PAUSE" label="PAUSE" enabled={st === "LIVE" || st === "PLAYER_LIVE"} />}
