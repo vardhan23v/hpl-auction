@@ -1,91 +1,134 @@
-# Hostel Premier League (HPL) — Live Cricket Auction Platform
+<div align="center">
 
-Six teams, 100-player pool, ₹1,00,000 purse per team, 11-player squads, real-time bidding over Socket.IO with a server-authoritative auction engine. Next.js 16 · TypeScript · Tailwind 4 · Prisma 6 · MySQL (Railway) · NextAuth.
+# 🏏 Hostel Premier League
 
-## Quick start (local)
+**Where Every Player Has a Price.**
+A production-grade live cricket auction platform — six teams, a 37-player pool, ₹1,00,000 purse per team and real-time bidding with a server-authoritative engine. Captains bid live over WebSockets while spectators watch the exact same auction state, down to the same countdown second.
+
+[![Live Demo](https://img.shields.io/badge/Demo-Live-853BCE?style=for-the-badge&logo=railway&logoColor=white)](https://hpl-web-production.up.railway.app)
+[![App Status](https://img.shields.io/website?url=https%3A%2F%2Fhpl-web-production.up.railway.app%2Fapi%2Fhealth&style=for-the-badge&label=App&up_message=online&down_message=offline&up_color=0E9F6E)](https://hpl-web-production.up.railway.app/api/health)
+[![Last Commit](https://img.shields.io/github/last-commit/vardhan23v/hpl-auction/main?style=for-the-badge&color=111827&label=Last%20Commit)](https://github.com/vardhan23v/hpl-auction/commits/main)
+
+[![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Socket.IO](https://img.shields.io/badge/Socket.IO-Realtime-010101?style=for-the-badge&logo=socketdotio&logoColor=white)](https://socket.io/)
+[![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)
+[![MySQL](https://img.shields.io/badge/MySQL-8-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![Tailwind](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![NextAuth](https://img.shields.io/badge/NextAuth-JWT-7C3AED?style=for-the-badge&logo=auth0&logoColor=white)](https://next-auth.js.org/)
+[![Railway](https://img.shields.io/badge/Railway-Singapore-0B0D0E?style=for-the-badge&logo=railway&logoColor=white)](https://railway.com/)
+
+[Live demo](#-live-demo) · [Features](#-whats-inside) · [Quick start](#-quick-start) · [Architecture](#-architecture) · [Auction rules](#-auction-rules) · [Realtime protocol](#-realtime-protocol) · [Deployment](#-deployment)
+
+</div>
+
+---
+
+## ✨ Live demo
+
+| | URL |
+|---|---|
+| **App** | https://hpl-web-production.up.railway.app |
+| **Live auction (public)** | https://hpl-web-production.up.railway.app/live |
+| **Health** | [`/api/health`](https://hpl-web-production.up.railway.app/api/health) — reports DB status |
+
+Sign in at `/login`:
+
+| Role | Email | Password |
+|---|---|---|
+| Admin | `admin@hpl.local` | `hpl2026` |
+| Auctioneer | `auctioneer@hpl.local` | `hpl2026` |
+| Captains | their registered team email | set by admin |
+
+> Spectators need no account — the `/live` room is public.
+
+---
+
+## 🧭 What's inside
+
+- **Live auction room** — broadcast-style screen: player card with photo & stats, the current bid as the hero element, highest bidder, live bid feed with animations, all six team purses updating the instant a player is sold, and dramatic **SOLD! / UNSOLD** stamps.
+- **Server-authoritative bidding** — every bid is validated on the server: auction live, player live, timer open, squad < 11, purse sufficient, correct ₹1,000 increment, captain bidding only for their own team. The browser is never trusted.
+- **Shared countdown** — one server-driven 15-second timer (configurable) that resets on every valid bid; every connected client sees the same clock, corrected for their clock offset.
+- **Transaction-safe sales** — SELL runs in a single MySQL transaction with `SELECT … FOR UPDATE` row locks: squad entry, purse deduction, player status, auction event — commit or roll back everything. Double-sells, duplicate bids and negative purses are impossible by construction.
+- **Auctioneer console** — start player (from queue or hand-picked), start/pause/reset timer, SELL / UNSOLD / SKIP / NEXT with confirmations, and **UNDO** that atomically reverses the last sale.
+- **Captain dashboard** — team purse, spent, squad 11-slot tracker, purchased players, and a big BID button with quick-increment and custom-amount bidding.
+- **Admin panel** — teams (name, logo, colour, captain + login sync), player CRUD with photos, registration approve/reject, drag-to-reorder auction queue, sold/unsold with re-queue, full bid log, users, auction settings, audit log.
+- **Player registration** — public form with cricket stats and photo upload; pool capped at 100 approved players; auto-close on deadline.
+- **Analytics & results** — team spending, purse remaining, squad composition, role distribution, bid activity, top prices; a final results page with squads and superlatives.
+- **Real players** — the S-4 squad imported from the Google Forms CSV with photos pulled from Drive, resized and served by the app.
+
+---
+
+## 🚀 Quick start
+
+**Prerequisites:** Node ≥ 20, MySQL 8.
 
 ```bash
-cp .env.example .env            # set DATABASE_URL (MySQL), NEXTAUTH_SECRET
+git clone https://github.com/vardhan23v/hpl-auction.git
+cd hpl-auction
+cp .env.example .env        # set DATABASE_URL + NEXTAUTH_SECRET
 npm install
-npx prisma migrate dev          # creates schema
-npm run db:seed                 # 6 teams, 100 players, accounts
-npm run dev                     # http://localhost:3000
+npx prisma migrate dev
+npm run db:seed             # 6 teams + admin/auctioneer/captain accounts
+npm run dev                 # http://localhost:3000
 ```
 
-Optional: `SEED_DEMO_AUCTION=1 npm run db:seed` also simulates a partially-run auction (sold/unsold players, bids).
+Import a Google Forms player CSV and fetch Drive photos:
 
-### Seeded logins (password `hpl2026`, override with `SEED_PASSWORD`)
+```bash
+npx tsx prisma/import-csv.ts "players.csv" --replace
+npx tsx prisma/fetch-photos.ts
+```
 
-| Role | Email |
+---
+
+## 🏗 Architecture
+
+```
+Browser ──HTTP──▶ Next.js 16 (App Router) ──┐
+   │                                        ├──▶ Prisma ──▶ MySQL (Railway)
+   └──WebSocket──▶ Socket.IO ──▶ Auction engine ┘
+                   (same Node process — server.ts)
+```
+
+- **`server.ts`** — custom Node server running Next.js and Socket.IO on one port.
+- **`src/server/auction-engine.ts`** — the single source of truth. Every mutation runs under a process-wide mutex, validates the state machine (`WAITING → LIVE ⇄ PAUSED → PLAYER_LIVE → SOLD/UNSOLD → … COMPLETED`) and persists to MySQL. Engine state lives on `globalThis` so the Next.js bundle and the custom server share one emitter, one lock, one timer.
+- **`src/server/socket.ts`** — authenticates sockets from the NextAuth JWT, rate-limits bids (token bucket), broadcasts full snapshots.
+- **`src/hooks/useAuction.ts`** — client hook: snapshot state, offset-corrected countdown, SOLD/UNSOLD flash events.
+- **Optional split mode** — set `REALTIME_URL`/`NEXT_PUBLIC_SOCKET_URL` and the app proxies auction actions to a standalone realtime service (`realtime/server.ts`) for Vercel + Railway hosting.
+
+## 📏 Auction rules
+
+| Rule | Value |
 |---|---|
-| Admin | admin@hpl.local |
-| Auctioneer | auctioneer@hpl.local |
-| Captain — Team Mookambika | sathwikks0007@gmail.com |
-| Captain — Dominators | sujanahosala2002@gmail.com |
-| Captain — Team Trishul | hitheshpolya@gmail.com |
-| Captains — Alpha / Bravo / Charlie (dummy) | captain.alp@hpl.local, captain.brv@hpl.local, captain.chr@hpl.local |
+| Teams | 6 · ₹1,00,000 purse each |
+| Squad limit | 11 players (bidding auto-blocked at 11/11) |
+| Base price | ₹1,000 per player |
+| Bid increment | ₹1,000 (configurable) |
+| Timer | 15 s, resets on every valid bid |
+| Timer at zero | bidding closes — auctioneer SELLs or marks UNSOLD |
+| Unsold players | admin can return them to the queue |
 
-Change passwords and dummy-team captains from **Admin → Teams** / **Admin → Users**.
+## 📡 Realtime protocol
 
-## Routes
+`auction:started/paused/resumed/completed` · `player:started/sold/unsold/skipped/next` · `bid:placed/accepted/rejected` · `timer:updated` · `team:purseUpdated/squadUpdated` · `state:sync` — every event carries a full authoritative snapshot, so clients can never drift.
 
-| Path | Who | What |
-|---|---|---|
-| `/` | public | Landing page |
-| `/live` | public | Spectator live room |
-| `/register` | public | Player registration |
-| `/squads`, `/history`, `/analytics`, `/results` | public | Squads, auction history, analytics, final results |
-| `/login` | — | Role-based redirect after login |
-| `/captain` | CAPTAIN | Team dashboard + live room with BID button |
-| `/auctioneer` | AUCTIONEER, ADMIN | Live room + auctioneer console |
-| `/admin/*` | ADMIN | Overview, live console, teams, players, registrations, queue (drag to reorder), sold, unsold, bids, users, settings |
+## ☁️ Deployment
 
-## Architecture
+Deployed on **Railway (Singapore)** — one service runs the app + WebSockets, alongside Railway MySQL over the private network.
 
-- `server.ts` — custom Node server: Next.js + Socket.IO on one port (required for WebSockets on Railway).
-- `src/server/auction-engine.ts` — **the** source of truth. Every mutation (start/pause/bid/sell/unsold/skip/undo) runs under a process mutex, validates state, and writes to MySQL; SELL runs in a single transaction with `SELECT … FOR UPDATE` row locks. Timer is server-driven; clients only render `timerEndsAt`.
-- `src/server/socket.ts` — authenticates sockets from the NextAuth JWT cookie, rate-limits bids, broadcasts snapshots.
-- `src/app/api/auction/control` — REST control surface for admin/auctioneer actions.
-- `src/hooks/useAuction.ts` — client hook: snapshot state, clock-offset-corrected countdown, SOLD/UNSOLD flashes.
+```bash
+# build:  npm install && npx prisma generate && npm run build
+# start:  npx prisma migrate deploy && npm start
+```
 
-Socket events: `auction:started|paused|resumed|completed`, `player:started|sold|unsold|skipped|next`, `bid:placed|accepted|rejected`, `timer:updated`, `team:purseUpdated|squadUpdated`, `state:sync`.
+Environment: `DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `SOCKET_SERVER_URL`, optional `CLOUDINARY_*` for durable image uploads. Keep exactly **1 replica** — the live engine is a single-process design.
 
-## Deployment
+---
 
-Two supported layouts. Both use Railway MySQL.
+<div align="center">
 
-### A) Vercel (web) + Railway (realtime) — recommended when you want the site on Vercel
+Built for the hostel, battle-tested for auction night. 🏏🔨
 
-The real-time engine (Socket.IO, timer, bid locking) needs a long-running process, which Vercel cannot host, so it runs as a small Railway service from the same repo.
-
-**1. Railway — realtime service**
-- Project → **+ New → GitHub Repo** → this repo. `railway.json` builds it and starts `npm run start:realtime`.
-- Variables:
-  - `DATABASE_URL` = `${{MySQL.MYSQL_URL}}`
-  - `NEXTAUTH_SECRET` = same value as on Vercel (sockets verify login tokens with it)
-  - `REALTIME_SECRET` = long random string (shared with Vercel)
-  - `CORS_ORIGIN` = your Vercel URL, e.g. `https://hpl-auction.vercel.app`
-- Settings → Networking → **Generate Domain** → e.g. `https://hpl-realtime.up.railway.app`. Region: **Singapore** for India.
-
-**2. Vercel — web app**
-- Import the GitHub repo. `vercel.json` sets the build command and the Mumbai region.
-- Environment variables:
-  - `DATABASE_URL` = Railway MySQL **public** URL (`MYSQL_PUBLIC_URL`)
-  - `NEXTAUTH_SECRET` = same as Railway
-  - `NEXTAUTH_URL` = your Vercel URL
-  - `REALTIME_URL` = the Railway domain
-  - `NEXT_PUBLIC_SOCKET_URL` = the Railway domain (build-time — redeploy after changing)
-  - `REALTIME_SECRET` = same as Railway
-  - optional `CLOUDINARY_*` (required for photo uploads on Vercel — local disk is read-only)
-
-### B) Railway only (single server)
-
-Deploy this repo as one Railway service with start command `npx prisma migrate deploy && npm start`, set `DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `SOCKET_SERVER_URL`. Leave `REALTIME_URL` unset — the app then runs Socket.IO in-process.
-
-### Seeding
-
-Run once against the production database from your machine: `npm run db:seed` (teams + accounts), `npx tsx prisma/import-csv.ts file.csv --replace`, `npx tsx prisma/fetch-photos.ts`.
-
-## Scripts
-
-`dev`, `build`, `start`, `db:migrate`, `db:deploy`, `db:seed`, `lint`.
+</div>
