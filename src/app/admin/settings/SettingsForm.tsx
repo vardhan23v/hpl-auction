@@ -27,6 +27,16 @@ export function SettingsForm() {
         <div className="flex flex-col gap-2 sm:col-span-2"><C k="registrationOpen" label="Registration open" /><C k="spectatorAccess" label="Spectator access to /live" /><C k="unsoldReentry" label="Allow unsold players to re-enter the queue" /></div>
       </div>
       <button className="btn-gold mt-4" disabled={busy} onClick={save}>{busy ? "Saving…" : "Save settings"}</button>
+      <div className="card mt-8 border-live/40 p-5">
+        <h2 className="display text-xl text-live">Danger zone</h2>
+        <p className="mt-1 text-sm text-muted">Reset the auction back to WAITING. All sales, bids and squad purchases are wiped, every purse returns to its starting value, and all players go back to the approved pool. Teams, players and accounts are kept.</p>
+        <button className="btn-red mt-3" onClick={async () => {
+          if (!confirm("RESET the auction? All sales, bids and purses will be wiped.")) return;
+          if (!confirm("Are you absolutely sure? This cannot be undone.")) return;
+          const r = await fetch("/api/auction/control", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "RESET_AUCTION" }) });
+          push({ title: r.ok ? "Auction reset — back to WAITING" : "Reset failed", tone: r.ok ? "success" : "error" });
+        }}>⟲ Reset auction</button>
+      </div>
     </div>
   );
 }

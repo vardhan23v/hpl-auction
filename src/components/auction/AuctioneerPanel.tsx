@@ -50,6 +50,7 @@ export function AuctioneerPanel({ a, isAdmin }: { a: A; isAdmin: boolean }) {
         <B act="NEXT" label="NEXT PLAYER ▶" cls="btn-gold" enabled={st === "SOLD" || st === "UNSOLD" || (st === "LIVE" && !s.currentPlayer)} />
         <B act="UNDO" label="↩ UNDO LAST" enabled={["SOLD", "UNSOLD", "LIVE", "PLAYER_LIVE"].includes(st)} confirm="Undo the last SOLD/UNSOLD/SKIP action? This reverses the purse and squad changes." />
         {isAdmin && <B act="COMPLETE" label="■ COMPLETE AUCTION" cls="btn-red" enabled={["LIVE", "PAUSED", "SOLD", "UNSOLD"].includes(st)} confirm="Complete the auction? No further actions will be possible." />}
+        {isAdmin && <button className="btn-ghost w-full text-live" disabled={!!busy} onClick={() => { if (!window.confirm("RESET the auction? All sales, bids and purses will be wiped. Players return to the pool.")) return; if (!window.confirm("Are you absolutely sure? This cannot be undone.")) return; act("RESET_AUCTION"); }}>⟲ RESET AUCTION</button>}
       </div>
       {s.state === "PLAYER_LIVE" && !s.timerRunning && a.remainingMs === 0 && s.currentBid > 0 && <div className="mt-3 rounded-lg bg-gold/15 px-3 py-2 text-sm text-gold">Timer expired — bidding closed. Choose SELL.</div>}
       {s.state === "PLAYER_LIVE" && !s.timerRunning && (s.timerRemainingMs == null || s.timerRemainingMs === s.timerSeconds * 1000) && <div className="mt-3 rounded-lg bg-panel-2 px-3 py-2 text-sm text-muted">Player is on the block. Press START TIMER to open bidding.</div>}
