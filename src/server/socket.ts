@@ -23,16 +23,17 @@ function cookieValue(header: string | undefined, name: string) {
 }
 
 export function attachSocket(httpServer: HttpServer) {
-  const io = new Server(httpServer, { path: "/socket.io", cors: { origin: process.env.NEXTAUTH_URL ?? true, credentials: true } });
+  const io = new Server(httpServer, { path: "/socket.io", cors: { origin: (process.env.CORS_ORIGIN ?? process.env.NEXTAUTH_URL ?? "*").split(",").map((o) => o.trim()), credentials: true } });
 
   engine.setEmitter((event: SocketEvent, payload: unknown) => io.emit(event, payload));
 
   io.use(async (socket: AuthedSocket, next) => {
     try {
       const raw = socket.handshake.headers.cookie;
-      const token = cookieValue(raw, "__Secure-next-auth.session-token") ?? cookieValue(raw, "next-auth.session-token");
+      const fromAuth = (socket.handshake.auth as { token?: string } | undefined)?.token;
+      const token = fromAuth ?? cookieValue(raw, "__Secure-next-auth.session-token") ?? cookieValue(raw, "next-auth.session-token");
       if (token && process.env.NEXTAUTH_SECRET) {
-        const decoded = await decode({ token: decodeURIComponent(token), secret: process.env.NEXTAUTH_SECRET });
+        const decoded = await decode({ token: fromAuth ? token : decodeURIComponent(token), secret: process.env.NEXTAUTH_SECRET });
         if (decoded?.uid) {
           socket.data.userId = decoded.uid as string;
           socket.data.role = decoded.role as string;

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import * as engine from "@/server/auction-engine";
 import { guard, parse, handle, json, audit } from "@/lib/api";
+import { realtimeUrl, forwardControl } from "@/server/realtime-client";
 
 const schema = z.object({
   action: z.enum(["START_AUCTION","PAUSE","RESUME","COMPLETE","RESET_AUCTION","START_PLAYER","START_TIMER","PAUSE_TIMER","RESET_TIMER","SELL","UNSOLD","SKIP","NEXT","UNDO","REQUEUE"]),
@@ -14,6 +15,11 @@ export async function POST(req: Request) {
     const { action, playerId } = await parse(req, schema);
     const adminOnly = ["RESET_AUCTION", "COMPLETE", "START_AUCTION", "REQUEUE"];
     if (adminOnly.includes(action) && g.session.user.role !== "ADMIN" && action !== "START_AUCTION" && action !== "COMPLETE") return json({ error: "Admin only" }, 403);
+    if (realtimeUrl) {
+      const fwd = await forwardControl(action, playerId);
+      await audit(g.session.user.id, `AUCTION_${action}`, "Auction", playerId);
+      return json(fwd.body, fwd.status);
+    }
     let result: unknown = null;
     switch (action) {
       case "START_AUCTION": await engine.startAuction(); break;

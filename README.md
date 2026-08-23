@@ -50,12 +50,41 @@ Change passwords and dummy-team captains from **Admin → Teams** / **Admin → 
 
 Socket events: `auction:started|paused|resumed|completed`, `player:started|sold|unsold|skipped|next`, `bid:placed|accepted|rejected`, `timer:updated`, `team:purseUpdated|squadUpdated`, `state:sync`.
 
-## Deploy on Railway
+## Deployment
 
-1. Create a Railway project → add **MySQL** plugin → add a service from this repo.
-2. Variables: `DATABASE_URL` (reference the MySQL plugin's `MYSQL_URL`), `NEXTAUTH_SECRET` (`openssl rand -base64 32`), `NEXTAUTH_URL` (your public URL), `SOCKET_SERVER_URL` (same), optional `CLOUDINARY_*` (without them, uploads go to local disk — use Cloudinary in production).
-3. `railway.json` already sets build `npm install && npx prisma generate && npm run build` and start `npx prisma migrate deploy && npm start`, with `/api/health` as the healthcheck.
-4. First deploy: run `npm run db:seed` once via `railway run npm run db:seed` (or a one-off shell) to create teams and the admin account.
+Two supported layouts. Both use Railway MySQL.
+
+### A) Vercel (web) + Railway (realtime) — recommended when you want the site on Vercel
+
+The real-time engine (Socket.IO, timer, bid locking) needs a long-running process, which Vercel cannot host, so it runs as a small Railway service from the same repo.
+
+**1. Railway — realtime service**
+- Project → **+ New → GitHub Repo** → this repo. `railway.json` builds it and starts `npm run start:realtime`.
+- Variables:
+  - `DATABASE_URL` = `${{MySQL.MYSQL_URL}}`
+  - `NEXTAUTH_SECRET` = same value as on Vercel (sockets verify login tokens with it)
+  - `REALTIME_SECRET` = long random string (shared with Vercel)
+  - `CORS_ORIGIN` = your Vercel URL, e.g. `https://hpl-auction.vercel.app`
+- Settings → Networking → **Generate Domain** → e.g. `https://hpl-realtime.up.railway.app`. Region: **Singapore** for India.
+
+**2. Vercel — web app**
+- Import the GitHub repo. `vercel.json` sets the build command and the Mumbai region.
+- Environment variables:
+  - `DATABASE_URL` = Railway MySQL **public** URL (`MYSQL_PUBLIC_URL`)
+  - `NEXTAUTH_SECRET` = same as Railway
+  - `NEXTAUTH_URL` = your Vercel URL
+  - `REALTIME_URL` = the Railway domain
+  - `NEXT_PUBLIC_SOCKET_URL` = the Railway domain (build-time — redeploy after changing)
+  - `REALTIME_SECRET` = same as Railway
+  - optional `CLOUDINARY_*` (required for photo uploads on Vercel — local disk is read-only)
+
+### B) Railway only (single server)
+
+Deploy this repo as one Railway service with start command `npx prisma migrate deploy && npm start`, set `DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `SOCKET_SERVER_URL`. Leave `REALTIME_URL` unset — the app then runs Socket.IO in-process.
+
+### Seeding
+
+Run once against the production database from your machine: `npm run db:seed` (teams + accounts), `npx tsx prisma/import-csv.ts file.csv --replace`, `npx tsx prisma/fetch-photos.ts`.
 
 ## Scripts
 

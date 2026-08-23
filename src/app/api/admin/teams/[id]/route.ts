@@ -33,8 +33,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       }
     }
     await audit(g.session.user.id, "TEAM_UPDATE", "Team", id, data);
-    const { emit } = await import("@/server/emit");
-    await emit("team:purseUpdated", { teamId: id });
+    const { realtimeUrl, forwardControl } = await import("@/server/realtime-client");
+    if (realtimeUrl) await forwardControl("BROADCAST").catch(() => {});
+    else { const { emit } = await import("@/server/emit"); await emit("team:purseUpdated", { teamId: id }); }
     return json(team);
   } catch (e) { return handle(e); }
 }
