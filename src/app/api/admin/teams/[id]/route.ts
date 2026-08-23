@@ -7,7 +7,7 @@ const schema = z.object({
   name: z.string().min(2).max(40).optional(),
   abbreviation: z.string().min(2).max(5).optional(),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
-  logoUrl: z.string().url().nullable().optional().or(z.literal("")),
+  logoUrl: z.string().regex(/^(https?:\/\/|\/)/, "must be a URL or /path").nullable().optional().or(z.literal("")),
   captainName: z.string().max(60).nullable().optional(),
   captainEmail: z.string().email().nullable().optional().or(z.literal("")),
   captainPassword: z.string().min(6).optional(),

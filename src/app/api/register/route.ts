@@ -5,7 +5,7 @@ import { getSettings } from "@/server/auction-engine";
 
 const schema = z.object({
   name: z.string().min(2).max(80),
-  photoUrl: z.string().url().optional().or(z.literal("")),
+  photoUrl: z.string().regex(/^(https?:\/\/|\/)/).optional().or(z.literal("")),
   age: z.coerce.number().int().min(14).max(60),
   phone: z.string().min(8).max(20),
   email: z.string().email(),
