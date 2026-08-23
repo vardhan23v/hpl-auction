@@ -9,10 +9,10 @@ import { LivePreview } from "@/components/LivePreview";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [teams, settings, auction] = await Promise.all([prisma.team.findMany({ orderBy: { sortOrder: "asc" } }), getSettings(), prisma.auction.findUnique({ where: { id: 1 } })]);
+  const [teams, settings, auction, poolCount] = await Promise.all([prisma.team.findMany({ orderBy: { sortOrder: "asc" } }), getSettings(), prisma.auction.findUnique({ where: { id: 1 } }), prisma.player.count({ where: { status: { notIn: ["REGISTERED", "REJECTED"] } } })]);
   const totalPurse = settings.startingPurse * teams.length;
   const stats = [
-    { v: String(teams.length), l: "Teams" }, { v: String(settings.maxPlayers), l: "Maximum Players" }, { v: inr(totalPurse), l: "Total Purse" },
+    { v: String(teams.length), l: "Teams" }, { v: String(poolCount || settings.maxPlayers), l: "Players In Pool" }, { v: inr(totalPurse), l: "Total Purse" },
     { v: inr(settings.startingPurse), l: "Purse Per Team" }, { v: String(settings.maxSquadSize), l: "Max Players Per Team" },
   ];
   const live = auction && !["WAITING", "COMPLETED"].includes(auction.state);
@@ -33,7 +33,7 @@ export default async function Home() {
             <Link href="/login" className="btn-gold !px-6 !py-3 text-base">TEAM LOGIN</Link>
             <Link href="/register" className="btn-ghost !px-6 !py-3 text-base">PLAYER REGISTRATION</Link>
           </div>
-          <div className="display mt-10 text-lg tracking-widest text-muted">{teams.length} Teams • {settings.maxPlayers} Players • {inr(totalPurse)} Total Purse</div>
+          <div className="display mt-10 text-lg tracking-widest text-muted">{teams.length} Teams • {poolCount || settings.maxPlayers} Players • {inr(totalPurse)} Total Purse</div>
         </section>
 
         {/* Stats */}
