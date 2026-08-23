@@ -1,0 +1,241 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  AUCTIONEER
+  CAPTAIN
+  SPECTATOR
+}
+
+enum PlayerStatus {
+  REGISTERED
+  REJECTED
+  APPROVED
+  WAITING
+  LIVE
+  SOLD
+  UNSOLD
+  SKIPPED
+}
+
+enum PlayingRole {
+  BATSMAN
+  BOWLER
+  ALL_ROUNDER
+  WICKETKEEPER
+}
+
+enum AuctionState {
+  WAITING
+  LIVE
+  PAUSED
+  PLAYER_LIVE
+  SOLD
+  UNSOLD
+  COMPLETED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(SPECTATOR)
+  team         Team?    @relation(fields: [teamId], references: [id])
+  teamId       String?  @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  bids         Bid[]
+  auditLogs    AuditLog[]
+  notifications Notification[]
+}
+
+model Team {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  abbreviation  String   @unique
+  color         String   @default("#f59e0b")
+  logoUrl       String?
+  captainName   String?
+  captainEmail  String?
+  isDummy       Boolean  @default(false)
+  startingPurse Int      @default(100000)
+  purse         Int      @default(100000)
+  spent         Int      @default(0)
+  squadCount    Int      @default(0)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  captain       User?
+  squad         SquadPlayer[]
+  bids          Bid[]
+  wonPlayers    Player[]
+  events        AuctionEvent[]
+}
+
+model Player {
+  id             String       @id @default(cuid())
+  name           String
+  photoUrl       String?
+  age            Int?
+  phone          String?
+  email          String?
+  hostelBlock    String?
+  roomNumber     String?
+  role           PlayingRole  @default(BATSMAN)
+  battingStyle   String?
+  bowlingStyle   String?
+  experience     String?
+  previousExp    String?
+  matches        Int          @default(0)
+  runs           Int          @default(0)
+  wickets        Int          @default(0)
+  strikeRate     Float?
+  economy        Float?
+  achievements   String?      @db.Text
+  bio            String?      @db.Text
+  basePrice      Int          @default(2000)
+  status         PlayerStatus @default(REGISTERED)
+  queueOrder     Int?
+  soldPrice      Int?
+  soldTo         Team?        @relation(fields: [soldToId], references: [id])
+  soldToId       String?
+  soldAt         DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  registration   PlayerRegistration?
+  bids           Bid[]
+  squadEntry     SquadPlayer?
+  events         AuctionEvent[]
+
+  @@index([status])
+  @@index([queueOrder])
+}
+
+model PlayerRegistration {
+  id         String   @id @default(cuid())
+  player     Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  playerId   String   @unique
+  reviewedBy String?
+  reviewedAt DateTime?
+  note       String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model AuctionSettings {
+  id                   Int      @id @default(1)
+  auctionName          String   @default("HPL Auction 2026")
+  auctionDate          DateTime?
+  startingPurse        Int      @default(100000)
+  maxSquadSize         Int      @default(11)
+  maxPlayers           Int      @default(100)
+  bidIncrement         Int      @default(1000)
+  timerSeconds         Int      @default(15)
+  registrationDeadline DateTime?
+  registrationOpen     Boolean  @default(true)
+  spectatorAccess      Boolean  @default(true)
+  unsoldReentry        Boolean  @default(true)
+  updatedAt            DateTime @updatedAt
+}
+
+/// Singleton live-auction state. Server is the source of truth.
+model Auction {
+  id               Int          @id @default(1)
+  state            AuctionState @default(WAITING)
+  currentPlayerId  String?
+  currentBid       Int          @default(0)
+  highestTeamId    String?
+  highestBidId     String?
+  timerEndsAt      DateTime?
+  timerRemainingMs Int?         // stored while paused
+  timerRunning     Boolean      @default(false)
+  startedAt        DateTime?
+  completedAt      DateTime?
+  updatedAt        DateTime     @updatedAt
+  version          Int          @default(0)
+}
+
+model AuctionSession {
+  id        String    @id @default(cuid())
+  name      String
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+}
+
+model Bid {
+  id        String   @id @default(cuid())
+  player    Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  playerId  String
+  team      Team     @relation(fields: [teamId], references: [id])
+  teamId    String
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+  amount    Int
+  createdAt DateTime @default(now())
+
+  @@unique([playerId, amount])
+  @@index([playerId, createdAt])
+  @@index([teamId])
+}
+
+model AuctionEvent {
+  id        String   @id @default(cuid())
+  type      String
+  player    Player?  @relation(fields: [playerId], references: [id], onDelete: SetNull)
+  playerId  String?
+  team      Team?    @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  teamId    String?
+  amount    Int?
+  payload   Json?
+  undone    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model SquadPlayer {
+  id        String   @id @default(cuid())
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId    String
+  player    Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  playerId  String   @unique
+  price     Int
+  createdAt DateTime @default(now())
+
+  @@index([teamId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String?  // null = broadcast
+  type      String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, read])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId    String?
+  action    String
+  entity    String?
+  entityId  String?
+  details   Json?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}

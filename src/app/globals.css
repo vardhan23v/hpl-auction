@@ -1,26 +1,57 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-pitch: #07090f;
+  --color-panel: #0e1320;
+  --color-panel-2: #141b2d;
+  --color-line: #1f2a44;
+  --color-gold: #f5b82e;
+  --color-gold-2: #ffd166;
+  --color-live: #ff2e4d;
+  --color-ink: #e8ecf5;
+  --color-muted: #8b95ad;
+  --font-display: var(--font-display), "Oswald", Impact, sans-serif;
+  --font-sans: var(--font-sans), system-ui, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html { color-scheme: dark; }
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: radial-gradient(1200px 600px at 50% -10%, #1a2340 0%, #07090f 60%) fixed, var(--color-pitch);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
+
+.stadium::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(600px 300px at 15% 20%, rgba(245,184,46,.12), transparent 60%),
+    radial-gradient(600px 300px at 85% 10%, rgba(255,46,77,.10), transparent 60%),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.015) 0 1px, transparent 1px 48px);
+}
+.glass { background: rgba(20,27,45,.6); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,.07); }
+.card { background: var(--color-panel); border: 1px solid var(--color-line); border-radius: 1rem; }
+.display { font-family: var(--font-display); letter-spacing: .02em; text-transform: uppercase; }
+.money { color: var(--color-gold); font-variant-numeric: tabular-nums; }
+
+.btn-gold { @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 font-semibold transition active:scale-[.98] disabled:opacity-40 disabled:cursor-not-allowed bg-gold text-black hover:bg-gold-2; }
+.btn-ghost { @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 font-semibold transition active:scale-[.98] disabled:opacity-40 disabled:cursor-not-allowed border border-line bg-panel-2 text-ink hover:border-gold/60; }
+.btn-red { @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 font-semibold transition active:scale-[.98] disabled:opacity-40 disabled:cursor-not-allowed bg-live text-white hover:brightness-110; }
+.btn-green { @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 font-semibold transition active:scale-[.98] disabled:opacity-40 disabled:cursor-not-allowed bg-emerald-500 text-black hover:bg-emerald-400; }
+.input { @apply w-full rounded-lg border border-line bg-panel-2 px-3 py-2 text-ink placeholder:text-muted focus:border-gold focus:outline-none; }
+.label { @apply mb-1 block text-xs font-semibold uppercase tracking-wider text-muted; }
+
+@keyframes pulse-live { 0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255,46,77,.6);} 50% { opacity: .6; box-shadow: 0 0 0 8px rgba(255,46,77,0);} }
+.live-dot { animation: pulse-live 1.4s infinite; }
+@keyframes slide-in { from { transform: translateY(-10px); opacity: 0 } to { transform: none; opacity: 1 } }
+.bid-new { animation: slide-in .35s ease-out; }
+@keyframes pop { 0% { transform: scale(.6); opacity: 0 } 60% { transform: scale(1.08); opacity: 1 } 100% { transform: scale(1) } }
+.pop { animation: pop .6s cubic-bezier(.2,.9,.3,1.2); }
+@keyframes reveal { from { transform: translateY(24px) scale(.97); opacity: 0 } to { transform: none; opacity: 1 } }
+.reveal { animation: reveal .5s ease-out; }
+@keyframes tick { 0% { transform: scale(1.12); color: #fff } 100% { transform: scale(1) } }
+.tick { animation: tick .3s ease-out; }
+@keyframes bump { 0% { transform: scale(1) } 40% { transform: scale(1.06); text-shadow: 0 0 30px rgba(245,184,46,.7) } 100% { transform: scale(1) } }
+.bump { animation: bump .5s ease-out; }
+@keyframes stamp { 0% { transform: rotate(-12deg) scale(2); opacity: 0 } 50% { transform: rotate(-8deg) scale(.95); opacity: 1 } 100% { transform: rotate(-8deg) scale(1) } }
+.stamp { animation: stamp .5s cubic-bezier(.2,.9,.3,1.1) both; }

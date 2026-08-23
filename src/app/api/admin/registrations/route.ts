@@ -1,0 +1,7 @@
+import { prisma } from "@/lib/prisma";
+import { guard, json } from "@/lib/api";
+export const dynamic = "force-dynamic";
+export async function GET() {
+  const g = await guard("ADMIN"); if ("error" in g) return g.error;
+  return json(await prisma.player.findMany({ where: { status: { in: ["REGISTERED", "REJECTED"] } }, orderBy: { createdAt: "desc" }, include: { registration: true } }));
+}
