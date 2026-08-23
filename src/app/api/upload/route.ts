@@ -18,8 +18,8 @@ export async function POST(req: Request) {
     });
     return json({ url });
   }
-  // Fallback for local dev without Cloudinary: write to public/uploads
-  const dir = path.join(process.cwd(), "public", "uploads");
+  // Fallback without Cloudinary: write to the uploads dir (mount a Railway volume here for persistence)
+  const dir = process.env.UPLOAD_DIR ?? path.join(process.cwd(), "uploads");
   await mkdir(dir, { recursive: true });
   const name = `${Date.now()}-${Math.random().toString(36).slice(2)}${path.extname(file.name) || ".jpg"}`;
   await writeFile(path.join(dir, name), buf);
