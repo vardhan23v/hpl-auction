@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { AuctionSnapshot } from "@/types/auction";
 export function LiveHeader({ snap, connected, clients }: { snap: AuctionSnapshot; connected: boolean; clients: number }) {
   const live = snap.state === "LIVE" || snap.state === "PLAYER_LIVE" || snap.state === "SOLD" || snap.state === "UNSOLD";
@@ -9,7 +10,8 @@ export function LiveHeader({ snap, connected, clients }: { snap: AuctionSnapshot
       <div className="text-muted">Status <span className="font-semibold text-ink">{snap.state.replace("_", " ")}</span></div>
       <div className="text-muted">Remaining <span className="font-semibold text-ink">{snap.playersRemaining} / {snap.totalPlayers}</span></div>
       <div className="text-muted">Teams active <span className="font-semibold text-ink">{active}/{snap.teams.length}</span></div>
-      <div className="ml-auto flex items-center gap-2 text-xs text-muted"><span className={`h-2 w-2 rounded-full ${connected ? "bg-emerald-400" : "bg-live"}`} />{connected ? `Connected · ${clients} watching` : "Reconnecting…"}</div>
+      <Link href="/display" className="ml-auto rounded-md border border-line px-2 py-1 text-xs text-muted hover:border-gold/60 hover:text-ink" title="Projector view">⛶ Big screen</Link>
+      <div className="flex items-center gap-2 text-xs text-muted"><span className={`h-2 w-2 rounded-full ${connected ? "bg-emerald-400" : "bg-live"}`} />{connected ? `Connected · ${clients} watching` : "Reconnecting…"}</div>
     </div>
   );
 }
