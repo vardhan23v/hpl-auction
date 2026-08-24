@@ -15,6 +15,7 @@ export function Nav() {
         </Link>
         <nav className="flex items-center gap-1 text-sm">
           <Link href="/live" className="rounded-md px-3 py-1.5 hover:bg-panel-2"><span className="live-dot mr-1.5 inline-block h-2 w-2 rounded-full bg-live" />Live</Link>
+          <Link href="/players" className="rounded-md px-3 py-1.5 hover:bg-panel-2">Players</Link>
           <Link href="/squads" className="hidden rounded-md px-3 py-1.5 hover:bg-panel-2 sm:inline">Squads</Link>
           <Link href="/history" className="hidden rounded-md px-3 py-1.5 hover:bg-panel-2 sm:inline">History</Link>
           <Link href="/analytics" className="hidden rounded-md px-3 py-1.5 hover:bg-panel-2 md:inline">Analytics</Link>
