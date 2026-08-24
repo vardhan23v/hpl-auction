@@ -29,7 +29,7 @@ export function AuctioneerPanel({ a, isAdmin }: { a: A; isAdmin: boolean }) {
   );
   const st = s.state;
   const highest = s.teams.find((t) => t.id === s.highestTeamId);
-  const biddingOpen = st === "PLAYER_LIVE" && s.timerRunning && a.remainingMs > 0;
+  const biddingOpen = st === "PLAYER_LIVE";
   async function bidFor(teamId: string) {
     const r = await a.placeBid(teamId, amount ? Number(amount) : undefined);
     if (r.ok) setAmount("");
@@ -47,8 +47,6 @@ export function AuctioneerPanel({ a, isAdmin }: { a: A; isAdmin: boolean }) {
           <button className="btn-gold whitespace-nowrap" disabled={!["LIVE", "SOLD", "UNSOLD"].includes(st) || !!busy} onClick={() => act("START_PLAYER", undefined, pick || undefined)}>START PLAYER</button>
         </div>
         <B act="SHUFFLE" label="🔀 SHUFFLE QUEUE" enabled={["WAITING", "LIVE", "SOLD", "UNSOLD", "PAUSED"].includes(st)} />
-        <B act="START_TIMER" label="START TIMER" enabled={st === "PLAYER_LIVE" && !s.timerRunning} />
-        <B act="RESET_TIMER" label="RESET TIMER" enabled={st === "PLAYER_LIVE" || st === "PAUSED"} />
         {st === "PAUSED" ? <B act="RESUME" label="RESUME" cls="btn-green" enabled /> : <B act="PAUSE" label="PAUSE" enabled={st === "LIVE" || st === "PLAYER_LIVE"} />}
         <B act="SELL" label={highest ? `SELL → ${highest.abbreviation}` : "SELL"} cls="btn-green" enabled={st === "PLAYER_LIVE" && s.currentBid > 0} confirm={`Sell ${s.currentPlayer?.name} to ${highest?.name} for ${inr(s.currentBid)}?`} />
         <B act="UNSOLD" label="UNSOLD" cls="btn-red" enabled={st === "PLAYER_LIVE" && s.currentBid === 0} confirm={`Mark ${s.currentPlayer?.name} UNSOLD?`} />
@@ -61,7 +59,7 @@ export function AuctioneerPanel({ a, isAdmin }: { a: A; isAdmin: boolean }) {
       {/* team bid bar — auctioneer records bids for any team */}
       <div className="mt-4 rounded-xl border border-line bg-panel-2/60 p-3">
         <div className="mb-2 flex items-center justify-between">
-          <div className="text-xs font-semibold uppercase tracking-wider text-muted">Place bid for team {biddingOpen ? <span className="text-gold">— next: {inr(a.nextBid)}</span> : <span>(waiting for timer)</span>}</div>
+          <div className="text-xs font-semibold uppercase tracking-wider text-muted">Place bid for team {biddingOpen ? <span className="text-gold">— next: {inr(a.nextBid)}</span> : <span>(no player live)</span>}</div>
           <input className="input w-36 !py-1 text-sm" placeholder={`Custom (${inr(a.nextBid)})`} inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value.replace(/\D/g, ""))} />
         </div>
         <div className="grid grid-cols-3 gap-2 md:grid-cols-6">
@@ -79,8 +77,7 @@ export function AuctioneerPanel({ a, isAdmin }: { a: A; isAdmin: boolean }) {
           })}
         </div>
       </div>
-      {s.state === "PLAYER_LIVE" && !s.timerRunning && a.remainingMs === 0 && s.currentBid > 0 && <div className="mt-3 rounded-lg bg-gold/15 px-3 py-2 text-sm text-gold">Timer expired — bidding closed. Choose SELL.</div>}
-      {s.state === "PLAYER_LIVE" && !s.timerRunning && (s.timerRemainingMs == null || s.timerRemainingMs === s.timerSeconds * 1000) && <div className="mt-3 rounded-lg bg-panel-2 px-3 py-2 text-sm text-muted">Player is on the block. Press START TIMER to open bidding.</div>}
+      {s.state === "PLAYER_LIVE" && s.currentBid > 0 && <div className="mt-3 rounded-lg bg-gold/15 px-3 py-2 text-sm text-gold">Highest: {highest?.name} at {inr(s.currentBid)} — SELL when the room settles.</div>}
     </div>
   );
 }

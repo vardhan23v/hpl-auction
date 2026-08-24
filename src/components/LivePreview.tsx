@@ -15,7 +15,7 @@ export function LivePreview() {
           <div><div className="label">Player</div><div className="display text-2xl">{p.name}</div><div className="text-xs text-muted">{ROLE_LABEL[p.role]}</div></div>
           <div><div className="label">Current bid</div><div className="display money text-3xl">{snap.currentBid ? inr(snap.currentBid) : "—"}</div></div>
           <div><div className="label">Highest bidder</div><div className="font-bold" style={{ color: h?.color }}>{h?.name ?? "—"}</div></div>
-          <div className="ml-auto"><Timer ms={remainingMs} running={snap.timerRunning} total={snap.timerSeconds} size="sm" /></div>
+          {snap.timerRunning && <div className="ml-auto"><Timer ms={remainingMs} running total={snap.timerSeconds} size="sm" /></div>}
         </>) : <div className="text-muted">{snap.state === "WAITING" ? "The auction hasn't started yet. Check back soon." : snap.state === "COMPLETED" ? "The auction is complete — see the results." : "Between players…"}</div>}
       </div>
     </Link>

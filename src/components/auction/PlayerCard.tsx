@@ -48,7 +48,7 @@ export function PlayerCard({ snap, remainingMs }: { snap: AuctionSnapshot; remai
                 {p.hostelBlock && <span className="rounded-md bg-panel-2 px-2 py-1">Block {p.hostelBlock}</span>}
               </div>
             </div>
-            <Timer ms={remainingMs} running={snap.timerRunning} total={snap.timerSeconds} />
+            {snap.timerRunning && <Timer ms={remainingMs} running total={snap.timerSeconds} />}
           </div>
           <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs text-muted">
             <div className="rounded-lg bg-panel-2 p-2"><div className="text-lg font-bold text-ink">{p.matches}</div>Matches</div>

@@ -53,7 +53,7 @@ export function DisplayScreen({ initial }: { initial: AuctionSnapshot }) {
                 <h1 className="display mt-1 text-[9vh] font-bold leading-[.95]">{p.name}</h1>
                 <div className="mt-3 flex gap-3 text-2xl text-muted"><span className="rounded-xl bg-panel-2 px-4 py-1 font-semibold text-ink">{ROLE_LABEL[p.role]}</span>{p.battingStyle && <span className="rounded-xl bg-panel-2 px-4 py-1">{p.battingStyle}</span>}{p.bowlingStyle && <span className="rounded-xl bg-panel-2 px-4 py-1">{p.bowlingStyle}</span>}</div>
               </div>
-              <div className={`display rounded-2xl border-4 px-8 py-4 text-[8vh] font-bold leading-none tabular-nums ${sec <= 5 && s.timerRunning ? "border-live text-live" : "border-line text-ink"} ${!s.timerRunning ? "opacity-40" : ""}`}>{mmss(a.remainingMs)}</div>
+              {s.timerRunning && <div className={`display rounded-2xl border-4 px-8 py-4 text-[8vh] font-bold leading-none tabular-nums ${sec <= 5 ? "border-live text-live" : "border-line text-ink"}`}>{mmss(a.remainingMs)}</div>}
             </div>
             <div className="mt-auto">
               <div className="flex items-end justify-between">

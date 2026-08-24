@@ -270,7 +270,6 @@ export const placeBid = (input: BidInput) => withLock(async () => {
   if (a.state !== "PLAYER_LIVE" || !a.currentPlayerId) throw new AuctionError("No player is live", "NO_PLAYER");
   const player = await prisma.player.findUnique({ where: { id: a.currentPlayerId } });
   if (!player || player.status !== "LIVE") throw new AuctionError("Player is not live", "PLAYER_NOT_LIVE");
-  if (!a.timerRunning || !a.timerEndsAt || a.timerEndsAt.getTime() <= Date.now()) throw new AuctionError("Bidding is closed — timer has expired", "TIMER_CLOSED");
   if (team.squadCount >= s.maxSquadSize) throw new AuctionError("Squad full (11/11)", "SQUAD_FULL");
   if (a.highestTeamId === team.id) throw new AuctionError("You are already the highest bidder", "ALREADY_HIGHEST");
 
@@ -281,15 +280,16 @@ export const placeBid = (input: BidInput) => withLock(async () => {
   if (amount < minNext) throw new AuctionError(`Bid must be at least ${minNext}`, "TOO_LOW");
   if (amount > team.purse) throw new AuctionError("Insufficient purse", "INSUFFICIENT_PURSE");
 
+  const timered = a.timerRunning; // timer is optional — reset it on bids only when in use
   const endsAt = new Date(Date.now() + s.timerSeconds * 1000);
   const bid = await prisma.$transaction(async (tx) => {
     const fresh = await tx.auction.findUniqueOrThrow({ where: { id: 1 } });
     if (fresh.version !== a.version) throw new AuctionError("Auction state changed, retry", "CONFLICT");
     const b = await tx.bid.create({ data: { playerId: player.id, teamId: team.id, userId: user.id, amount } });
-    await tx.auction.update({ where: { id: 1 }, data: { currentBid: amount, highestTeamId: team.id, highestBidId: b.id, timerEndsAt: endsAt, timerRunning: true, timerRemainingMs: null, version: { increment: 1 } } });
+    await tx.auction.update({ where: { id: 1 }, data: { currentBid: amount, highestTeamId: team.id, highestBidId: b.id, ...(timered ? { timerEndsAt: endsAt, timerRunning: true, timerRemainingMs: null } : {}), version: { increment: 1 } } });
     return b;
   });
-  scheduleTimerEnd(endsAt);
+  if (timered) scheduleTimerEnd(endsAt);
   if (a.highestTeamId && a.highestTeamId !== team.id) {
     const outbid = await prisma.user.findFirst({ where: { teamId: a.highestTeamId } });
     if (outbid) await prisma.notification.create({ data: { userId: outbid.id, type: "OUTBID", title: "You've been outbid", message: `${team.name} bid ${amount} on ${player.name}.` } });
