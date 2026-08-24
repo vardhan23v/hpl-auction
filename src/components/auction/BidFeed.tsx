@@ -5,7 +5,7 @@ export function BidFeed({ bids, compact = false }: { bids: BidSnapshot[]; compac
     <div className="card flex flex-col p-4">
       <div className="mb-2 flex items-center justify-between"><h3 className="display text-lg">Live Bids</h3><span className="text-xs text-muted">{bids.length} bids</span></div>
       <div className={`flex flex-col gap-1.5 overflow-auto ${compact ? "max-h-56" : "max-h-[420px]"}`}>
-        {bids.length === 0 && <div className="py-6 text-center text-sm text-muted">Waiting for the first bid…</div>}
+        {bids.length === 0 && <div className="py-8 text-center text-sm text-muted"><span className="mr-2 inline-block h-2 w-2 animate-ping rounded-full bg-gold/70 align-middle" />Waiting for the first bid<span className="dot1">.</span><span className="dot2">.</span><span className="dot3">.</span></div>}
         {bids.map((b, i) => (
           <div key={b.id} className={`flex items-center justify-between rounded-lg px-3 py-2 ${i === 0 ? "bid-new bg-gold/10 ring-1 ring-gold/40" : "bg-panel-2"}`}>
             <div className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full" style={{ background: b.color }} /><span className="text-sm font-semibold">{b.teamName}</span></div>

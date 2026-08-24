@@ -11,7 +11,7 @@ export function RecentResults() {
     <div className="card p-4">
       <h3 className="display mb-2 text-lg">Recent Results</h3>
       <div className="flex max-h-[420px] flex-col gap-1.5 overflow-auto">
-        {rows.length === 0 && <div className="py-6 text-center text-sm text-muted">No players sold yet.</div>}
+        {rows.length === 0 && <div className="py-8 text-center text-sm text-muted"><span className="floaty inline-block text-2xl">🔨</span><div className="mt-1">The gavel is warming up.</div></div>}
         {rows.map((r) => (
           <div key={r.id} className="flex items-center justify-between rounded-lg bg-panel-2 px-3 py-2 text-sm">
             <div><div className="font-semibold">{r.name}</div><div className="text-[11px] text-muted">{ROLE_LABEL[r.role]} · base {inr(r.basePrice)}</div></div>

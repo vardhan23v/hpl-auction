@@ -22,7 +22,7 @@ export function PursePanel({ teams, highlight, mine }: { teams: TeamSnapshot[]; 
           const isOpen = open === t.id;
           const sq = squads[t.id];
           return (
-            <div key={t.id} className={`rounded-lg border transition ${highlight === t.id ? "border-gold bg-gold/10" : "border-line bg-panel-2"} ${mine === t.id ? "ring-1 ring-sky-400/60" : ""}`}>
+            <div key={t.id} className={`team-row rounded-lg border ${highlight === t.id ? "border-gold bg-gold/10" : "border-line bg-panel-2"} ${mine === t.id ? "ring-1 ring-sky-400/60" : ""}`}>
               <button className="w-full p-2.5 text-left" onClick={() => setOpen(isOpen ? null : t.id)} aria-expanded={isOpen}>
                 <div className="flex items-center gap-3">
                   <TeamBadge name={t.name} abbreviation={t.abbreviation} color={t.color} logoUrl={t.logoUrl} size={34} />
@@ -32,7 +32,7 @@ export function PursePanel({ teams, highlight, mine }: { teams: TeamSnapshot[]; 
                       <span>Spent {inr(t.spent)}</span>
                       <span className={left === 0 ? "font-bold text-live" : left === 1 ? "font-bold text-gold" : ""}>{left === 0 ? "SQUAD FULL" : left === 1 ? "1 SLOT REMAINING" : `${t.squadCount}/${t.maxSquad}`}</span>
                     </div>
-                    <div className="mt-1 h-1 overflow-hidden rounded bg-line"><div className="h-full transition-all" style={{ width: `${pct * 100}%`, background: t.color }} /></div>
+                    <div className="mt-1 h-1 overflow-hidden rounded bg-line"><div className="bar-anim h-full transition-all" style={{ width: `${pct * 100}%`, background: t.color }} /></div>
                   </div>
                   <span className={`text-xs text-muted transition-transform ${isOpen ? "rotate-180" : ""}`}>▾</span>
                 </div>

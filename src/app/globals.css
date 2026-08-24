@@ -69,3 +69,27 @@ details summary { list-style: none; position: relative; padding-right: 1.5rem; }
 details summary::after { content: "+"; position: absolute; right: .25rem; top: 0; color: var(--color-gold); font-weight: 700; transition: transform .2s; }
 details[open] summary::after { transform: rotate(45deg); }
 img { user-select: none; }
+
+/* ---- live page cinematics ---- */
+@keyframes orb { 0% { transform: translate(0,0) scale(1); opacity:.5 } 50% { transform: translate(30px,-40px) scale(1.15); opacity:.9 } 100% { transform: translate(-20px,10px) scale(1); opacity:.5 } }
+@keyframes ember { 0% { transform: translateY(0) scale(1); opacity:0 } 15% { opacity:.8 } 100% { transform: translateY(-140px) scale(.4); opacity:0 } }
+@keyframes ringspin { from { transform: rotate(0) } to { transform: rotate(360deg) } }
+@keyframes sheen { 0%, 60% { transform: translateX(-120%) skewX(-15deg) } 100% { transform: translateX(220%) skewX(-15deg) } }
+@keyframes dots { 0%,20% { opacity:.2 } 50% { opacity:1 } 80%,100% { opacity:.2 } }
+@keyframes barshine { 0% { transform: translateX(-100%) } 100% { transform: translateX(300%) } }
+@keyframes bidglow { 0%,100% { text-shadow: 0 0 24px rgba(245,184,46,.35) } 50% { text-shadow: 0 0 48px rgba(245,184,46,.75), 0 0 90px rgba(245,184,46,.3) } }
+@keyframes floaty { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-8px) } }
+
+.orb { position:absolute; border-radius:9999px; filter: blur(40px); pointer-events:none; animation: orb 9s ease-in-out infinite; }
+.ember { position:absolute; bottom:0; width:5px; height:5px; border-radius:9999px; background:#f5b82e; animation: ember 5s linear infinite; pointer-events:none; }
+.ring { animation: ringspin 14s linear infinite; transform-origin: center; }
+.sheen { position:relative; overflow:hidden; }
+.sheen::after { content:""; position:absolute; inset:0 auto 0 0; width:35%; background:linear-gradient(90deg, transparent, rgba(255,255,255,.06), transparent); animation: sheen 5s ease-in-out infinite; pointer-events:none; }
+.dot1 { animation: dots 1.4s infinite } .dot2 { animation: dots 1.4s .25s infinite } .dot3 { animation: dots 1.4s .5s infinite }
+.bar-anim { position:relative; overflow:hidden; }
+.bar-anim::after { content:""; position:absolute; inset:0; width:40%; background:linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent); animation: barshine 2.6s ease-in-out infinite; }
+.bid-glow { animation: bidglow 2.4s ease-in-out infinite; }
+.floaty { animation: floaty 4s ease-in-out infinite; }
+.team-row { transition: transform .18s ease, box-shadow .18s ease; }
+.team-row:hover { transform: translateX(3px); box-shadow: 0 4px 20px rgba(0,0,0,.35); }
+@media (prefers-reduced-motion: reduce) { .orb,.ember,.ring,.sheen::after,.bar-anim::after,.bid-glow,.floaty { animation: none } }

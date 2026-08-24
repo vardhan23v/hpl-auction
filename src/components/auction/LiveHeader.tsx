@@ -4,7 +4,7 @@ export function LiveHeader({ snap, connected, clients }: { snap: AuctionSnapshot
   const live = snap.state === "LIVE" || snap.state === "PLAYER_LIVE" || snap.state === "SOLD" || snap.state === "UNSOLD";
   const active = snap.teams.filter((t) => t.squadCount < t.maxSquad).length;
   return (
-    <div className="glass mb-4 flex flex-wrap items-center gap-x-6 gap-y-2 rounded-xl px-4 py-3 text-sm">
+    <div className="glass sheen mb-4 flex flex-wrap items-center gap-x-6 gap-y-2 rounded-xl px-4 py-3 text-sm">
       <div className="display text-lg font-bold tracking-widest"><span className="text-gold">HPL</span> Hostel Premier League</div>
       <div className="flex items-center gap-2 font-bold"><span className={`inline-block h-2.5 w-2.5 rounded-full ${live ? "live-dot bg-live" : "bg-muted"}`} />{live ? "LIVE" : snap.state}</div>
       <div className="text-muted">Status <span className="font-semibold text-ink">{snap.state.replace("_", " ")}</span></div>
