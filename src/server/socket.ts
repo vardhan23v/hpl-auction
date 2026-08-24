@@ -51,12 +51,13 @@ export function attachSocket(httpServer: HttpServer) {
 
     socket.on("state:request", async (cb?: (s: unknown) => void) => { const s = await engine.getSnapshot(); cb?.(s); socket.emit("state:sync", { snapshot: s }); });
 
-    socket.on("bid:place", async (payload: { amount?: number } | undefined, cb?: (r: unknown) => void) => {
+    socket.on("bid:place", async (payload: { amount?: number; teamId?: string } | undefined, cb?: (r: unknown) => void) => {
       const reply = (r: { ok: boolean; error?: string; code?: string }) => { cb?.(r); if (!r.ok) socket.emit("bid:rejected", r); };
-      if (!socket.data.userId || socket.data.role !== "CAPTAIN" || !socket.data.teamId) return reply({ ok: false, error: "Only team captains can bid", code: "FORBIDDEN" });
-      if (!allow(socket.data.userId)) return reply({ ok: false, error: "Too many bids — slow down", code: "RATE_LIMIT" });
+      if (!socket.data.userId || !["ADMIN", "AUCTIONEER"].includes(socket.data.role ?? "")) return reply({ ok: false, error: "Only the auctioneer can place bids", code: "FORBIDDEN" });
+      if (!payload?.teamId) return reply({ ok: false, error: "Pick a team to bid for", code: "NO_TEAM" });
+      if (!allow(socket.data.userId, 10)) return reply({ ok: false, error: "Too many bids — slow down", code: "RATE_LIMIT" });
       try {
-        const bid = await engine.placeBid({ userId: socket.data.userId, teamId: socket.data.teamId, amount: payload?.amount });
+        const bid = await engine.placeBid({ userId: socket.data.userId, teamId: payload.teamId, amount: payload?.amount });
         reply({ ok: true });
         io.emit("bid:placed", { bidId: bid.id, teamId: bid.teamId, amount: bid.amount });
       } catch (e) {

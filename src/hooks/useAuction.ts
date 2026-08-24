@@ -33,8 +33,8 @@ export function useAuction(initial?: AuctionSnapshot | null) {
 
   useEffect(() => { if (!flash) return; const t = setTimeout(() => setFlash(null), 4500); return () => clearTimeout(t); }, [flash]);
 
-  const placeBid = useCallback((amount?: number) => new Promise<{ ok: boolean; error?: string }>((resolve) => {
-    getSocket().emit("bid:place", { amount }, (r: { ok: boolean; error?: string }) => { if (!r.ok) setLastRejection(r.error ?? "Rejected"); resolve(r); });
+  const placeBid = useCallback((teamId: string, amount?: number) => new Promise<{ ok: boolean; error?: string }>((resolve) => {
+    getSocket().emit("bid:place", { teamId, amount }, (r: { ok: boolean; error?: string }) => { if (!r.ok) setLastRejection(r.error ?? "Rejected"); resolve(r); });
   }), []);
 
   const remainingMs = snap ? (snap.timerRunning && snap.timerEndsAt ? Math.max(0, snap.timerEndsAt - now) : (snap.timerRemainingMs ?? (snap.state === "PLAYER_LIVE" ? snap.timerSeconds * 1000 : 0))) : 0;

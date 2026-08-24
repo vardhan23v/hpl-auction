@@ -263,7 +263,8 @@ export const placeBid = (input: BidInput) => withLock(async () => {
     prisma.team.findUnique({ where: { id: input.teamId } }),
   ]);
   if (!user) throw new AuctionError("Not authenticated", "UNAUTHENTICATED");
-  if (user.role !== "CAPTAIN" || user.teamId !== input.teamId || !team) throw new AuctionError("You can only bid for your own team", "FORBIDDEN");
+  if (!["ADMIN", "AUCTIONEER"].includes(user.role)) throw new AuctionError("Only the auctioneer can place bids", "FORBIDDEN");
+  if (!team) throw new AuctionError("Team not found", "NOT_FOUND");
   if (a.state === "PAUSED") throw new AuctionError("Auction is paused", "PAUSED");
   if (a.state === "COMPLETED") throw new AuctionError("Auction is completed", "COMPLETED");
   if (a.state !== "PLAYER_LIVE" || !a.currentPlayerId) throw new AuctionError("No player is live", "NO_PLAYER");

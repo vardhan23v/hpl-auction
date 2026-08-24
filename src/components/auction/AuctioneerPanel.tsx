@@ -10,6 +10,7 @@ type Q = { id: string; name: string; role: string; basePrice: number; status: st
 export function AuctioneerPanel({ a, isAdmin }: { a: A; isAdmin: boolean }) {
   const { push } = useToast();
   const [busy, setBusy] = useState<string | null>(null);
+  const [amount, setAmount] = useState("");
   const [queue, setQueue] = useState<Q[]>([]);
   const [pick, setPick] = useState("");
   const s = a.snap!;
@@ -28,6 +29,11 @@ export function AuctioneerPanel({ a, isAdmin }: { a: A; isAdmin: boolean }) {
   );
   const st = s.state;
   const highest = s.teams.find((t) => t.id === s.highestTeamId);
+  const biddingOpen = st === "PLAYER_LIVE" && s.timerRunning && a.remainingMs > 0;
+  async function bidFor(teamId: string) {
+    const r = await a.placeBid(teamId, amount ? Number(amount) : undefined);
+    if (r.ok) setAmount("");
+  }
   return (
     <div className="card p-4">
       <div className="mb-3 flex items-center justify-between"><h3 className="display text-lg">Auctioneer Console</h3><span className="rounded bg-panel-2 px-2 py-0.5 text-xs font-bold">{st}</span></div>
@@ -51,6 +57,27 @@ export function AuctioneerPanel({ a, isAdmin }: { a: A; isAdmin: boolean }) {
         <B act="UNDO" label="↩ UNDO LAST" enabled={["SOLD", "UNSOLD", "LIVE", "PLAYER_LIVE"].includes(st)} confirm="Undo the last SOLD/UNSOLD/SKIP action? This reverses the purse and squad changes." />
         {isAdmin && <B act="COMPLETE" label="■ COMPLETE AUCTION" cls="btn-red" enabled={["LIVE", "PAUSED", "SOLD", "UNSOLD"].includes(st)} confirm="Complete the auction? No further actions will be possible." />}
         {isAdmin && <button className="btn-ghost w-full text-live" disabled={!!busy} onClick={() => { if (!window.confirm("RESET the auction? All sales, bids and purses will be wiped. Players return to the pool.")) return; if (!window.confirm("Are you absolutely sure? This cannot be undone.")) return; act("RESET_AUCTION"); }}>⟲ RESET AUCTION</button>}
+      </div>
+      {/* team bid bar — auctioneer records bids for any team */}
+      <div className="mt-4 rounded-xl border border-line bg-panel-2/60 p-3">
+        <div className="mb-2 flex items-center justify-between">
+          <div className="text-xs font-semibold uppercase tracking-wider text-muted">Place bid for team {biddingOpen ? <span className="text-gold">— next: {inr(a.nextBid)}</span> : <span>(waiting for timer)</span>}</div>
+          <input className="input w-36 !py-1 text-sm" placeholder={`Custom (${inr(a.nextBid)})`} inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value.replace(/\D/g, ""))} />
+        </div>
+        <div className="grid grid-cols-3 gap-2 md:grid-cols-6">
+          {s.teams.map((t) => {
+            const cant = !biddingOpen || t.squadCount >= t.maxSquad || (amount ? Number(amount) : a.nextBid) > t.purse || s.highestTeamId === t.id;
+            const why = t.squadCount >= t.maxSquad ? "FULL" : (amount ? Number(amount) : a.nextBid) > t.purse ? "No purse" : s.highestTeamId === t.id ? "Highest" : null;
+            return (
+              <button key={t.id} disabled={cant} onClick={() => bidFor(t.id)}
+                className="flex flex-col items-center rounded-lg border px-2 py-2 font-bold transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-35"
+                style={{ borderColor: t.color, background: s.highestTeamId === t.id ? `${t.color}22` : "transparent" }}>
+                <span className="display text-lg" style={{ color: t.color }}>{t.abbreviation}</span>
+                <span className="text-[10px] text-muted">{why ?? inr(t.purse)}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
       {s.state === "PLAYER_LIVE" && !s.timerRunning && a.remainingMs === 0 && s.currentBid > 0 && <div className="mt-3 rounded-lg bg-gold/15 px-3 py-2 text-sm text-gold">Timer expired — bidding closed. Choose SELL.</div>}
       {s.state === "PLAYER_LIVE" && !s.timerRunning && (s.timerRemainingMs == null || s.timerRemainingMs === s.timerSeconds * 1000) && <div className="mt-3 rounded-lg bg-panel-2 px-3 py-2 text-sm text-muted">Player is on the block. Press START TIMER to open bidding.</div>}
