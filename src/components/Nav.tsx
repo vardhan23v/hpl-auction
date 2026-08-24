@@ -19,6 +19,7 @@ export function Nav() {
           <Link href="/squads" className="hidden rounded-md px-3 py-1.5 hover:bg-panel-2 sm:inline">Squads</Link>
           <Link href="/history" className="hidden rounded-md px-3 py-1.5 hover:bg-panel-2 sm:inline">History</Link>
           <Link href="/analytics" className="hidden rounded-md px-3 py-1.5 hover:bg-panel-2 md:inline">Analytics</Link>
+          <Link href="/results" className="hidden rounded-md px-3 py-1.5 hover:bg-panel-2 md:inline">Results</Link>
           <Link href="/register" className="hidden rounded-md px-3 py-1.5 hover:bg-panel-2 md:inline">Register</Link>
           {u ? (
             <>

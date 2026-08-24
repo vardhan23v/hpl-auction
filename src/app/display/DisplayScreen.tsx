@@ -79,6 +79,7 @@ export function DisplayScreen({ initial }: { initial: AuctionSnapshot }) {
         <main className="flex flex-1 flex-col items-center justify-center">
           <div className="display text-[10vh] text-muted">{s.state === "WAITING" ? "AUCTION STARTS SOON" : s.state === "COMPLETED" ? "AUCTION COMPLETE" : s.state === "PAUSED" ? "PAUSED" : "NEXT PLAYER COMING UP"}</div>
           <div className="mt-4 text-3xl text-muted">{s.soldCount} sold · {s.unsoldCount} unsold · {s.playersRemaining} remaining</div>
+          {s.state === "COMPLETED" && <div className="display mt-8 text-4xl text-gold">Final teams → /results</div>}
         </main>
       )}
 

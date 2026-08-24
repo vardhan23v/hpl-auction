@@ -12,9 +12,18 @@ export function PlayerCard({ snap, remainingMs }: { snap: AuctionSnapshot; remai
   const highest = snap.teams.find((t) => t.id === snap.highestTeamId);
 
   if (!p) {
+    if (snap.state === "COMPLETED") {
+      return (
+        <div className="card flex min-h-[360px] flex-col items-center justify-center p-8 text-center">
+          <div className="display text-5xl text-gold">HPL Auction Complete</div>
+          <div className="mt-2 text-muted">All squads are finalized.</div>
+          <a href="/results" className="btn-gold mt-6 !px-6 !py-3 text-base">View the final teams →</a>
+        </div>
+      );
+    }
     return (
       <div className="card flex min-h-[360px] flex-col items-center justify-center p-8 text-center">
-        <div className="display text-3xl text-muted">{snap.state === "WAITING" ? "Auction hasn't started" : snap.state === "COMPLETED" ? "Auction complete" : snap.state === "PAUSED" ? "Auction paused" : "Waiting for next player…"}</div>
+        <div className="display text-3xl text-muted">{snap.state === "WAITING" ? "Auction hasn't started" : snap.state === "PAUSED" ? "Auction paused" : "Waiting for next player…"}</div>
         <div className="mt-2 text-sm text-muted">{snap.playersRemaining} players remaining</div>
       </div>
     );
