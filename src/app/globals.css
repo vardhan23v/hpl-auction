@@ -93,3 +93,6 @@ img { user-select: none; }
 .team-row { transition: transform .18s ease, box-shadow .18s ease; }
 .team-row:hover { transform: translateX(3px); box-shadow: 0 4px 20px rgba(0,0,0,.35); }
 @media (prefers-reduced-motion: reduce) { .orb,.ember,.ring,.sheen::after,.bar-anim::after,.bid-glow,.floaty { animation: none } }
+
+@keyframes goldflow { 0% { background-position: 0% 50% } 100% { background-position: 200% 50% } }
+.gold-text { background: linear-gradient(90deg, #f5b82e, #ffd166, #fff3d6, #ffd166, #f5b82e); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent; animation: goldflow 4s linear infinite; }

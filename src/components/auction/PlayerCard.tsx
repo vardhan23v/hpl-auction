@@ -30,9 +30,9 @@ export function PlayerCard({ snap, remainingMs }: { snap: AuctionSnapshot; remai
           <svg viewBox="0 0 100 100" className="ring absolute inset-0 h-full w-full"><circle cx="50" cy="50" r="46" fill="none" stroke="#f5b82e" strokeWidth="2" strokeDasharray="10 14" opacity=".6" /></svg>
           <div className="floaty absolute inset-3 flex items-center justify-center rounded-full border border-gold/40 bg-panel-2"><span className="display text-3xl font-bold text-gold">HPL</span></div>
         </div>
-        <div className="display text-4xl">{snap.state === "WAITING" ? "The block awaits" : snap.state === "PAUSED" ? "Auction paused" : "Next player coming up"}</div>
+        <div className={`display text-5xl md:text-6xl ${snap.state === "WAITING" ? "gold-text" : ""}`}>{snap.state === "WAITING" ? "Auction Starts Soon" : snap.state === "PAUSED" ? "Auction Paused" : "Next Player Coming Up"}</div>
         <div className="mt-2 text-sm text-muted">
-          {snap.state === "WAITING" ? "Six purses. One gavel. First player drops soon" : snap.state === "PAUSED" ? "Hold tight — bidding resumes shortly" : "Shuffling the deck"}
+          {snap.state === "WAITING" ? "Get ready to bid" : snap.state === "PAUSED" ? "Hold tight — bidding resumes shortly" : "Shuffling the deck"}
           <span className="dot1">.</span><span className="dot2">.</span><span className="dot3">.</span>
         </div>
         <div className="mt-6 flex gap-6 text-center">
