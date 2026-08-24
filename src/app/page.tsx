@@ -23,7 +23,7 @@ export default async function Home() {
         {/* Hero */}
         <section className="relative mx-auto max-w-7xl px-4 pb-16 pt-20 text-center md:pt-28">
           <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-line bg-panel/70 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest">
-            <span className={`h-2 w-2 rounded-full ${live ? "live-dot bg-live" : "bg-gold"}`} />{live ? "Auction is live now" : "Season 2026 · Live Player Auction"}
+            <span className={`h-2 w-2 rounded-full ${live ? "live-dot bg-live" : "bg-gold"}`} />{live ? "Auction is live now" : "Season 4 · Live Player Auction"}
           </div>
           <h1 className="display text-6xl font-bold leading-[.95] md:text-8xl lg:text-9xl">Hostel<br /><span className="bg-gradient-to-r from-gold to-gold-2 bg-clip-text text-transparent">Premier League</span></h1>
           <p className="display mt-6 text-2xl text-ink/90 md:text-4xl">&ldquo;Where Every Player Has a Price.&rdquo;</p>
