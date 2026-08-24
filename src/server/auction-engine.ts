@@ -188,7 +188,7 @@ export const resetAuction = () => withLock(async () => {
     await tx.auctionEvent.deleteMany();
     await tx.player.updateMany({ where: { status: { in: ["WAITING", "LIVE", "SOLD", "UNSOLD", "SKIPPED"] } }, data: { status: "APPROVED", soldPrice: null, soldToId: null, soldAt: null } });
     const teams = await tx.team.findMany();
-    for (const t of teams) await tx.team.update({ where: { id: t.id }, data: { purse: t.startingPurse, spent: 0, squadCount: 0 } });
+    for (const t of teams) await tx.team.update({ where: { id: t.id }, data: { purse: t.startingPurse, spent: 0, squadCount: 1 } }); // captain holds slot 1
     await tx.auction.update({ where: { id: 1 }, data: { state: "WAITING", currentPlayerId: null, currentBid: 0, highestTeamId: null, highestBidId: null, timerEndsAt: null, timerRemainingMs: null, timerRunning: false, startedAt: null, completedAt: null, version: { increment: 1 } } });
   });
   await broadcast("state:sync");

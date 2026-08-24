@@ -23,6 +23,9 @@ export default async function Squads() {
                   <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs text-muted sm:grid-cols-5">
                     {[["Purse left", inr(t.purse)], ["Spent", inr(t.spent)], ["Squad", `${t.squadCount}/${settings.maxSquadSize}`], ["Highest buy", inr(max)], ["Avg buy", inr(avg)]].map(([l, v]) => <div key={l} className="rounded-lg bg-panel-2 p-2"><div className="font-bold text-ink">{v}</div>{l}</div>)}
                   </div>
+                  <div className="mt-4"><div className="label">Captain</div>
+                    <div className="flex items-center justify-between border-b border-line/50 py-1.5 text-sm last:border-0"><span>{t.captainName ?? "TBA"} <span className="rounded bg-gold/20 px-1.5 py-0.5 text-[10px] font-bold text-gold">C</span></span><span className="text-xs text-muted">slot 1</span></div>
+                  </div>
                   {ORDER.map((role) => { const list = t.squad.filter((s) => s.player.role === role); if (!list.length) return null; return (
                     <div key={role} className="mt-4"><div className="label">{ROLE_LABEL[role]}s</div>
                       {list.map((s) => <div key={s.id} className="flex items-center justify-between border-b border-line/50 py-1.5 text-sm last:border-0"><span>{s.player.name}</span><span className="money font-semibold">{inr(s.price)}</span></div>)}

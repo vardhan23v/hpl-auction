@@ -32,7 +32,7 @@ async function main() {
 
   const teams = [];
   for (const [i, t] of TEAMS.entries()) {
-    teams.push(await prisma.team.upsert({ where: { name: t.name }, update: { sortOrder: i }, create: { ...t, isDummy: t.isDummy ?? false, sortOrder: i } }));
+    teams.push(await prisma.team.upsert({ where: { name: t.name }, update: { sortOrder: i }, create: { ...t, isDummy: t.isDummy ?? false, sortOrder: i, squadCount: 1 } }));
   }
 
   await prisma.user.upsert({ where: { email: "admin@hpl.local" }, update: {}, create: { name: "HPL Admin", email: "admin@hpl.local", role: "ADMIN", passwordHash: hash } });

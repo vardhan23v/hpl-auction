@@ -27,7 +27,7 @@ export default async function Results() {
           {teams.map((t) => (
             <div key={t.id} className="card overflow-hidden"><div className="h-1.5" style={{ background: t.color }} /><div className="p-4">
               <div className="flex items-center gap-3"><TeamBadge name={t.name} abbreviation={t.abbreviation} color={t.color} logoUrl={t.logoUrl} size={44} /><div><div className="display text-2xl">{t.name}</div><div className="text-xs text-muted">{t.squadCount}/{settings.maxSquadSize} · purse left <span className="money">{inr(t.purse)}</span></div></div></div>
-              <div className="mt-3 flex flex-col gap-1 text-sm">{t.squad.map((s) => <div key={s.id} className="flex justify-between"><span>{s.player.name} <span className="text-xs text-muted">{ROLE_LABEL[s.player.role]}</span></span><span className="money">{inr(s.price)}</span></div>)}{t.squad.length === 0 && <div className="text-muted">No players</div>}</div>
+              <div className="mt-3 flex flex-col gap-1 text-sm"><div className="flex justify-between"><span>{t.captainName ?? "TBA"} <span className="text-[10px] font-bold text-gold">C</span></span><span className="text-xs text-muted">captain</span></div>{t.squad.map((s) => <div key={s.id} className="flex justify-between"><span>{s.player.name} <span className="text-xs text-muted">{ROLE_LABEL[s.player.role]}</span></span><span className="money">{inr(s.price)}</span></div>)}{t.squad.length === 0 && <div className="text-muted">No players</div>}</div>
             </div></div>
           ))}
         </div>
