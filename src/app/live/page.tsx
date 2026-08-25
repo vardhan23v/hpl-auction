@@ -1,6 +1,6 @@
 import { Nav } from "@/components/Nav";
 import { AuctionRoom } from "@/components/auction/AuctionRoom";
-import { getSnapshot, getSettings } from "@/server/auction-engine";
+import { getSnapshotCached as getSnapshot, getSettings } from "@/server/auction-engine";
 export const dynamic = "force-dynamic";
 export default async function LivePage() {
   const s = await getSettings();

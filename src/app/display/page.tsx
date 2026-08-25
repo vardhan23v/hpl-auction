@@ -1,4 +1,4 @@
-import { getSnapshot, getSettings } from "@/server/auction-engine";
+import { getSnapshotCached as getSnapshot, getSettings } from "@/server/auction-engine";
 import { DisplayScreen } from "./DisplayScreen";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "HPL — Live Auction Screen" };

@@ -45,11 +45,11 @@ export function attachSocket(httpServer: HttpServer) {
   });
 
   io.on("connection", async (socket: AuthedSocket) => {
-    socket.emit("state:sync", { snapshot: await engine.getSnapshot() });
+    socket.emit("state:sync", { snapshot: await engine.getSnapshotCached() });
     socket.emit("presence", { clients: io.engine.clientsCount });
     io.emit("presence", { clients: io.engine.clientsCount });
 
-    socket.on("state:request", async (cb?: (s: unknown) => void) => { const s = await engine.getSnapshot(); cb?.(s); socket.emit("state:sync", { snapshot: s }); });
+    socket.on("state:request", async (cb?: (s: unknown) => void) => { const s = await engine.getSnapshotCached(); cb?.(s); socket.emit("state:sync", { snapshot: s }); });
 
     socket.on("bid:place", async (payload: { amount?: number; teamId?: string } | undefined, cb?: (r: unknown) => void) => {
       const reply = (r: { ok: boolean; error?: string; code?: string }) => { cb?.(r); if (!r.ok) socket.emit("bid:rejected", r); };
