@@ -5,12 +5,12 @@ import { getSettings } from "@/server/auction-engine";
 
 const schema = z.object({
   name: z.string().min(2).max(80),
-  photoUrl: z.string().regex(/^(https?:\/\/|\/)/).optional().or(z.literal("")),
-  age: z.coerce.number().int().min(14).max(60),
+  photoUrl: z.string().regex(/^(https?:\/\/|\/)/, "photo is required"),
+  age: z.coerce.number().int().min(14).max(60).optional(),
   phone: z.string().min(8).max(20),
-  email: z.string().email(),
-  hostelBlock: z.string().min(1).max(20),
-  roomNumber: z.string().min(1).max(20),
+  email: z.string().email().optional().or(z.literal("")),
+  hostelBlock: z.string().max(20).optional(),
+  roomNumber: z.string().max(20).optional(),
   role: z.enum(["BATSMAN","BOWLER","ALL_ROUNDER","WICKETKEEPER"]),
   battingStyle: z.string().max(40).optional(),
   bowlingStyle: z.string().max(40).optional(),
@@ -22,8 +22,7 @@ const schema = z.object({
   strikeRate: z.coerce.number().min(0).optional(),
   economy: z.coerce.number().min(0).optional(),
   achievements: z.string().max(1000).optional(),
-  bio: z.string().max(1000).optional(),
-});
+  });
 
 const hits = new Map<string, number[]>();
 export async function POST(req: Request) {
@@ -40,9 +39,13 @@ export async function POST(req: Request) {
     if (approved >= s.maxPlayers) return fail("Player pool is full (100 approved players)", 403);
 
     const data = await parse(req, schema);
-    const dup = await prisma.player.findFirst({ where: { email: data.email } });
-    if (dup) return fail("A registration with this email already exists", 409);
-    const player = await prisma.player.create({ data: { ...data, photoUrl: data.photoUrl || null, status: "REGISTERED", basePrice: s.bidIncrement * 2, registration: { create: {} } } });
+    if (data.email) {
+      const dup = await prisma.player.findFirst({ where: { email: data.email } });
+      if (dup) return fail("A registration with this email already exists", 409);
+    }
+    const dupPhone = await prisma.player.findFirst({ where: { phone: data.phone } });
+    if (dupPhone) return fail("A registration with this phone number already exists", 409);
+    const player = await prisma.player.create({ data: { ...data, email: data.email || null, status: "REGISTERED", basePrice: s.bidIncrement * 2, registration: { create: {} } } });
     return json({ ok: true, id: player.id, message: "Registration submitted successfully." }, 201);
   } catch (e) { return handle(e); }
 }

@@ -15,6 +15,7 @@ export default function Register() {
   useEffect(() => { fetch("/api/register").then((r) => r.json()).then(setStatus); }, []);
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault(); setBusy(true); setErr(null);
+    if (!photoUrl) { setErr("Profile photo is required"); setBusy(false); return; }
     const data = Object.fromEntries(new FormData(e.currentTarget).entries());
     const res = await fetch("/api/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...data, photoUrl }) });
     const j = await res.json(); setBusy(false);
@@ -34,10 +35,10 @@ export default function Register() {
           <div className="card mt-8 p-10 text-center text-muted">Registrations are closed — the pool is full or the deadline has passed.</div>
         ) : (
           <form onSubmit={submit} className="card mt-6 grid gap-4 p-6 md:grid-cols-2">
-            <div className="md:col-span-2"><label className="label">Profile photo</label><ImageUpload value={photoUrl} onChange={setPhotoUrl} /></div>
-            <F label="Full name" name="name" required /><F label="Age" name="age" type="number" required min={14} max={60} />
-            <F label="Phone" name="phone" type="tel" required /><F label="Email" name="email" type="email" required />
-            <F label="Hostel block" name="hostelBlock" required placeholder="e.g. A" /><F label="Room number" name="roomNumber" required />
+            <div className="md:col-span-2"><label className="label">Profile photo *</label><ImageUpload value={photoUrl} onChange={setPhotoUrl} /></div>
+            <F label="Full name" name="name" required /><F label="Age" name="age" type="number" min={14} max={60} />
+            <F label="Phone" name="phone" type="tel" required /><F label="Email" name="email" type="email" />
+            <F label="Hostel block" name="hostelBlock" placeholder="e.g. A" /><F label="Room number" name="roomNumber" />
             <div><label className="label">Playing role *</label><select name="role" className="input" required><option value="BATSMAN">Batsman</option><option value="BOWLER">Bowler</option><option value="ALL_ROUNDER">All-Rounder</option><option value="WICKETKEEPER">Wicketkeeper</option></select></div>
             <div><label className="label">Batting style</label><select name="battingStyle" className="input"><option>Right-hand bat</option><option>Left-hand bat</option></select></div>
             <div><label className="label">Bowling style</label><select name="bowlingStyle" className="input"><option value="">None</option><option>Right-arm fast</option><option>Right-arm medium</option><option>Left-arm fast</option><option>Left-arm medium</option><option>Off spin</option><option>Leg spin</option><option>Left-arm orthodox</option><option>Left-arm chinaman</option></select></div>
@@ -47,7 +48,6 @@ export default function Register() {
             <F label="Wickets" name="wickets" type="number" min={0} /><F label="Strike rate" name="strikeRate" type="number" min={0} step="0.1" />
             <F label="Economy" name="economy" type="number" min={0} step="0.1" />
             <div className="md:col-span-2"><label className="label">Achievements</label><textarea name="achievements" className="input" rows={2} /></div>
-            <div className="md:col-span-2"><label className="label">Short bio</label><textarea name="bio" className="input" rows={3} placeholder="Tell the captains why they should bid on you." /></div>
             {err && <div className="rounded-lg bg-live/15 px-3 py-2 text-sm text-live md:col-span-2">{err}</div>}
             <button className="btn-gold md:col-span-2" disabled={busy}>{busy ? "Submitting…" : "Submit registration"}</button>
           </form>
