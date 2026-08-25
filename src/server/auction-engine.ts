@@ -32,12 +32,10 @@ function withLock<T>(fn: () => Promise<T>): Promise<T> {
 
 // ---- helpers --------------------------------------------------------------
 export async function getSettings() {
-  const s = await prisma.auctionSettings.findUnique({ where: { id: 1 } });
-  return s ?? prisma.auctionSettings.upsert({ where: { id: 1 }, update: {}, create: { id: 1 } });
+  return prisma.auctionSettings.upsert({ where: { id: 1 }, update: {}, create: { id: 1 } });
 }
 async function getAuction(tx: Prisma.TransactionClient | typeof prisma = prisma) {
-  const a = await tx.auction.findUnique({ where: { id: 1 } });
-  return a ?? tx.auction.upsert({ where: { id: 1 }, update: {}, create: { id: 1 } });
+  return tx.auction.upsert({ where: { id: 1 }, update: {}, create: { id: 1 } });
 }
 
 function clearTimer() { if (shared.timer) clearTimeout(shared.timer); shared.timer = null; }
@@ -63,19 +61,6 @@ export async function resumeTimerOnBoot() {
 }
 
 // ---- snapshot -------------------------------------------------------------
-/** Read-only callers (HTTP state route, socket state:request, page SSR) share one in-flight
- *  snapshot per 400ms window so a burst of viewers doesn't fan out into hundreds of DB queries.
- *  Mutations broadcast via getSnapshot() directly, which always reads fresh. */
-const snapCache = globalThis as unknown as { __hplSnap?: { at: number; p: Promise<AuctionSnapshot> } };
-export function getSnapshotCached(): Promise<AuctionSnapshot> {
-  const c = snapCache.__hplSnap;
-  if (c && Date.now() - c.at < 400) return c.p;
-  const p = getSnapshot();
-  snapCache.__hplSnap = { at: Date.now(), p };
-  p.catch(() => { if (snapCache.__hplSnap?.p === p) snapCache.__hplSnap = undefined; });
-  return p;
-}
-
 export async function getSnapshot(): Promise<AuctionSnapshot> {
   const [a, settings, teams, counts] = await Promise.all([
     getAuction(), getSettings(),
@@ -120,9 +105,7 @@ export async function getSnapshot(): Promise<AuctionSnapshot> {
 }
 
 async function broadcast(event: SocketEvent, payload: unknown = {}) {
-  const p = getSnapshot();
-  snapCache.__hplSnap = { at: Date.now(), p };
-  const snap = await p;
+  const snap = await getSnapshot();
   emit(event, { ...(payload as object), snapshot: snap });
 }
 export const emitSnapshot = (event: SocketEvent, payload: object = {}) => broadcast(event, payload);
