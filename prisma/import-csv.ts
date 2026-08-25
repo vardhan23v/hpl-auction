@@ -9,8 +9,13 @@ const driveId = (u: string) => u.match(/[?&]id=([\w-]+)/)?.[1] ?? u.match(/\/d\/
 async function main() {
   const rows = parse(fs.readFileSync(file), { columns: (h: string[]) => h.map((c) => c.trim().toUpperCase()), skip_empty_lines: true }) as Record<string, string>[];
   if (replace) { const n = await prisma.player.deleteMany({ where: { status: { notIn: ["SOLD", "LIVE"] } } }); console.log("Removed", n.count, "existing players"); }
+  // Dedupe repeat form submissions by phone number, keeping the latest row.
+  const byPhone = new Map<string, Record<string, string>>();
+  for (const r of rows) byPhone.set((r["PHONE NUMBER"] ?? "").trim() || Math.random().toString(), r);
+  const unique = [...byPhone.values()];
+  if (unique.length !== rows.length) console.log("Deduped", rows.length - unique.length, "repeat submissions");
   let i = 0;
-  for (const r of rows) {
+  for (const r of unique) {
     const name = r["NAME"]?.trim(); if (!name) continue;
     const id = driveId(r["PHOTO"] ?? "");
     const usn = r["USN"]?.trim() || null;
