@@ -96,3 +96,8 @@ img { user-select: none; }
 
 @keyframes goldflow { 0% { background-position: 0% 50% } 100% { background-position: 200% 50% } }
 .gold-text { background: linear-gradient(90deg, #f5b82e, #ffd166, #fff3d6, #ffd166, #f5b82e); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent; animation: goldflow 4s linear infinite; }
+
+/* ---- mobile form overflow fixes ---- */
+input, select, textarea { min-width: 0; max-width: 100%; }
+input[type="file"] { width: 100%; }
+.card { min-width: 0; }

@@ -9,9 +9,9 @@ export function ImageUpload({ value, onChange }: { value: string; onChange: (url
     setBusy(false); if (!r.ok) return setErr(j.error ?? "Upload failed"); onChange(j.url);
   }
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex flex-wrap items-center gap-4">
       <div className="h-20 w-20 overflow-hidden rounded-xl border border-line bg-panel-2">{value && /* eslint-disable-next-line @next/next/no-img-element */ <img src={value} alt="" className="h-full w-full object-cover" />}</div>
-      <div><input type="file" accept="image/*" onChange={pick} className="text-sm text-muted file:mr-3 file:rounded-md file:border-0 file:bg-panel-2 file:px-3 file:py-1.5 file:text-ink" />{busy && <div className="text-xs text-muted">Uploading…</div>}{err && <div className="text-xs text-live">{err}</div>}</div>
+      <div className="min-w-0 flex-1"><input type="file" accept="image/*" onChange={pick} className="text-sm text-muted file:mr-3 file:rounded-md file:border-0 file:bg-panel-2 file:px-3 file:py-1.5 file:text-ink" />{busy && <div className="text-xs text-muted">Uploading…</div>}{err && <div className="text-xs text-live">{err}</div>}</div>
     </div>
   );
 }
