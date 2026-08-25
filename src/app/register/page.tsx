@@ -43,11 +43,6 @@ export default function Register() {
             <div><label className="label">Batting style</label><select name="battingStyle" className="input"><option>Right-hand bat</option><option>Left-hand bat</option></select></div>
             <div><label className="label">Bowling style</label><select name="bowlingStyle" className="input"><option value="">None</option><option>Right-arm fast</option><option>Right-arm medium</option><option>Left-arm fast</option><option>Left-arm medium</option><option>Off spin</option><option>Leg spin</option><option>Left-arm orthodox</option><option>Left-arm chinaman</option></select></div>
             <div><label className="label">Experience</label><select name="experience" className="input"><option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Pro</option></select></div>
-            <div className="md:col-span-2"><label className="label">Previous cricket experience</label><textarea name="previousExp" className="input" rows={2} placeholder="Teams, tournaments, leagues…" /></div>
-            <F label="Matches" name="matches" type="number" min={0} /><F label="Runs" name="runs" type="number" min={0} />
-            <F label="Wickets" name="wickets" type="number" min={0} /><F label="Strike rate" name="strikeRate" type="number" min={0} step="0.1" />
-            <F label="Economy" name="economy" type="number" min={0} step="0.1" />
-            <div className="md:col-span-2"><label className="label">Achievements</label><textarea name="achievements" className="input" rows={2} /></div>
             {err && <div className="rounded-lg bg-live/15 px-3 py-2 text-sm text-live md:col-span-2">{err}</div>}
             <button className="btn-gold md:col-span-2" disabled={busy}>{busy ? "Submitting…" : "Submit registration"}</button>
           </form>
