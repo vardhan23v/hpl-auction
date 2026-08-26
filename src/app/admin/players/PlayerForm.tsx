@@ -1,10 +1,27 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useToast } from "@/components/Toast";
 import { ImageUpload } from "@/components/ImageUpload";
 export type P = { id: string; name: string; photoUrl: string | null; age: number | null; phone: string | null; email: string | null; hostelBlock: string | null; roomNumber: string | null; role: string; battingStyle: string | null; bowlingStyle: string | null; experience: string | null; previousExp: string | null; matches: number; runs: number; wickets: number; strikeRate: number | null; economy: number | null; achievements: string | null; bio: string | null; basePrice: number; status: string; soldPrice: number | null; soldTo: { name: string; color: string } | null };
 const empty = { name: "", photoUrl: "", age: "", phone: "", email: "", hostelBlock: "", roomNumber: "", role: "BATSMAN", battingStyle: "", bowlingStyle: "", experience: "", previousExp: "", matches: 0, runs: 0, wickets: 0, strikeRate: "", economy: "", achievements: "", bio: "", basePrice: 2000, status: "APPROVED" };
 export function PlayerForm({ player, onClose }: { player: P | null; onClose: () => void }) {
+  const [teams, setTeams] = useState<{ id: string; name: string; purse: number; squadCount: number }[]>([]);
+  const [teamId, setTeamId] = useState<string>("");
+  const [teamPrice, setTeamPrice] = useState<string>("");
+  useEffect(() => {
+    fetch("/api/admin/teams").then((r) => r.json()).then((ts) => {
+      setTeams(ts);
+      if (player?.soldTo) { const t = ts.find((x: { name: string }) => x.name === player.soldTo!.name); if (t) setTeamId(t.id); }
+      if (player?.soldPrice) setTeamPrice(String(player.soldPrice));
+    });
+  }, [player]);
+  async function saveTeam() {
+    if (!player) return;
+    const r = await fetch(`/api/admin/players/${player.id}/team`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ teamId: teamId || null, price: teamPrice ? Number(teamPrice) : undefined }) });
+    const j = await r.json();
+    push({ title: r.ok ? (teamId ? "Player assigned to team" : "Player removed from team") : "Team change failed", body: j.error, tone: r.ok ? "success" : "error" });
+    if (r.ok) onClose();
+  }
   const [f, setF] = useState<Record<string, unknown>>(player ? { ...player, photoUrl: player.photoUrl ?? "" } : empty); const [busy, setBusy] = useState(false);
   const { push } = useToast();
   const set = (k: string, v: unknown) => setF((x) => ({ ...x, [k]: v }));
@@ -33,6 +50,20 @@ export function PlayerForm({ player, onClose }: { player: P | null; onClose: () 
           <div className="sm:col-span-2"><label className="label">Achievements</label><textarea className="input" rows={2} value={(f.achievements as string) ?? ""} onChange={(e) => set("achievements", e.target.value)} /></div>
           <div className="sm:col-span-2"><label className="label">Bio</label><textarea className="input" rows={2} value={(f.bio as string) ?? ""} onChange={(e) => set("bio", e.target.value)} /></div>
         </div>
+        {player && (
+          <div className="mt-5 rounded-xl border border-gold/30 bg-gold/5 p-4">
+            <div className="label">Team assignment</div>
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              <select className="input w-56" value={teamId} onChange={(e) => setTeamId(e.target.value)}>
+                <option value="">— No team (back to pool) —</option>
+                {teams.map((t) => <option key={t.id} value={t.id}>{t.name} (₹{t.purse} left · {t.squadCount} players)</option>)}
+              </select>
+              <input className="input w-36" placeholder={`Price (₹${player.basePrice})`} inputMode="numeric" value={teamPrice} onChange={(e) => setTeamPrice(e.target.value.replace(/\D/g, ""))} disabled={!teamId} />
+              <button className="btn-ghost" onClick={saveTeam}>Apply team change</button>
+            </div>
+            <div className="mt-1 text-[11px] text-muted">Moves purse and squad counts automatically. Removing sends the player back to the auction pool.</div>
+          </div>
+        )}
         <div className="mt-4 flex justify-end gap-2"><button className="btn-ghost" onClick={onClose}>Cancel</button><button className="btn-gold" disabled={busy} onClick={save}>{busy ? "Saving…" : "Save"}</button></div>
       </div>
     </div>
