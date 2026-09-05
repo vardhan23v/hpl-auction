@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuction } from "@/hooks/useAuction";
 import { inr, ROLE_LABEL, mmss } from "@/lib/format";
 import { TeamBadge } from "@/components/TeamBadge";
+import { ConnectionOverlay } from "@/components/ConnectionOverlay";
 import type { AuctionSnapshot } from "@/types/auction";
 
 export function DisplayScreen({ initial }: { initial: AuctionSnapshot }) {
@@ -19,6 +20,7 @@ export function DisplayScreen({ initial }: { initial: AuctionSnapshot }) {
 
   return (
     <div className="stadium fixed inset-0 flex flex-col overflow-hidden bg-pitch">
+      <ConnectionOverlay size="big" />
       {/* SOLD / UNSOLD takeover */}
       {a.flash && (
         <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/85 backdrop-blur">
