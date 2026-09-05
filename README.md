@@ -116,14 +116,55 @@ Browser ──HTTP──▶ Next.js 16 (App Router) ──┐
 
 ## ☁️ Deployment
 
-Deployed on **Railway (Singapore)** — one service runs the app + WebSockets, alongside Railway MySQL over the private network.
+Deployed on **Railway (Singapore)** — one service (`hpl-web`) runs the app + WebSockets, alongside Railway **MySQL** over the private network (`mysql.railway.internal`). Pushes to `main` auto-deploy via the GitHub integration.
 
 ```bash
-# build:  npm install && npx prisma generate && npm run build
-# start:  npx prisma migrate deploy && npm start
+# build:  npm install && npx prisma generate && npm run build      (railway.json)
+# start:  npx prisma migrate deploy && npm start                    (npm start forces NODE_ENV=production)
+# health: GET /api/health  →  {"ok":true,"db":"up"}
 ```
 
-Environment: `DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `SOCKET_SERVER_URL`, optional `CLOUDINARY_*` for durable image uploads. Keep exactly **1 replica** — the live engine is a single-process design.
+### Environment variables
+
+| Variable | Required | Notes |
+|---|---|---|
+| `DATABASE_URL` | ✅ | `mysql://…@mysql.railway.internal:3306/railway` |
+| `NEXTAUTH_SECRET` | ✅ | any long random string |
+| `NEXTAUTH_URL` | ✅ | public URL of the app |
+| `NODE_ENV` | ✅ | **must be `production`** — otherwise `server.ts` boots the Next.js *dev* server, which compiles pages on demand and OOMs on small containers (pages 502, `/api/health` still 200). `npm start` sets it, the Railway variable is belt-and-braces. |
+| `SOCKET_SERVER_URL` | ✅ | same as `NEXTAUTH_URL` in single-server mode |
+| `UPLOAD_DIR` | optional | `/app/uploads` — mounted volume for player photos |
+| `CLOUDINARY_*` | optional | durable image uploads instead of the volume |
+
+Keep exactly **1 replica** — the live engine is a single-process design.
+
+### Free plan / serverless mode
+
+The project currently runs on Railway's **Free plan**, which only allows *serverless* services. Both `hpl-web` and `MySQL` have **Settings → Deploy → Serverless** turned on. Consequences:
+
+- Services **sleep when idle**; the first request after a quiet spell cold-starts Next.js *and* MySQL (~15–30 s). Open `/live` a few minutes before auction night so everything is warm. Connected WebSocket clients keep the app awake.
+- Containers are **0.5 GB RAM / 1 vCPU** — which is why `NODE_ENV=production` is non-negotiable.
+- For an always-on setup, upgrade the workspace to Hobby; nothing in the code needs to change.
+
+### Troubleshooting
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Public URL shows Railway's *"Not Found — the train has not arrived"* | no live deployment on the domain | trigger a deploy (see below) and check the deployment status |
+| Deployment **FAILED** with no runtime logs | rejected before start — read `railway deployment list --service hpl-web --json` → `meta.configErrors` | e.g. *"Free plan deployments must be serverless"* → enable Serverless on **both** services |
+| Serverless is on but deploys still fail with the same error | `railway redeploy` (and the dashboard *Redeploy* button) **clones the failed deployment's frozen config**, error included | use the dashboard **Deploy** button, push a commit, or set/change a variable — anything that creates a *fresh* deployment |
+| `/api/health` is 200 but every page is 502 | app running in dev mode (`> HPL ready … (dev)` in logs) | set `NODE_ENV=production` |
+| `[db] connected` never appears | MySQL service asleep/failed or `DATABASE_URL` wrong | check the MySQL service status, then `DATABASE_URL` |
+
+Handy CLI:
+
+```bash
+railway link                                   # bind a fresh clone to project → environment → hpl-web
+railway status                                 # both services + latest deployment state
+railway logs --build <deploymentId>            # build output
+railway logs -d <deploymentId>                 # runtime output
+railway variables --service hpl-web --set NODE_ENV=production   # also triggers a fresh deploy
+```
 
 ---
 
